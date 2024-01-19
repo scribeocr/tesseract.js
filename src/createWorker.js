@@ -190,6 +190,17 @@ module.exports = async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, confi
     }))
   );
 
+  const recognize2 = async (image, opts = {}, output = {
+    blocks: true, text: true, hocr: true, tsv: true,
+  }, jobId) => (
+    startJob(createJob({
+      id: jobId,
+      action: 'recognize2',
+      payload: { image: await loadImage(image), options: opts, output },
+    }))
+  );
+
+
   const getPDF = (title = 'Tesseract OCR Result', textonly = false, jobId) => {
     console.log('`getPDF` function is depreciated. `recognize` option `savePDF` should be used instead.');
     return startJob(createJob({
@@ -263,6 +274,7 @@ module.exports = async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, confi
     reinitialize,
     setParameters,
     recognize,
+    recognize2,
     getPDF,
     detect,
     terminate,

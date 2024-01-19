@@ -360,7 +360,7 @@ const processOutput = (output) => {
 
 // List of options for Tesseract.js (rather than passed through to Tesseract),
 // not including those with prefix "tessjs_"
-const tessjsOptions = ['rectangle', 'pdfTitle', 'pdfTextOnly', 'rotateAuto', 'rotateRadians'];
+const tessjsOptions = ['rectangle', 'pdfTitle', 'pdfTextOnly', 'rotateAuto', 'rotateRadians', 'lstm', 'legacy'];
 
 const recognize = async ({
   payload: {
@@ -465,6 +465,139 @@ const recognize = async ({
   }
 };
 
+const recognize2 = async ({
+  payload: {
+    image, options, output,
+  },
+}, res) => {
+  try {
+    const lstm = options.lstm || false;
+    const legacy = options.legacy || false;
+
+    const optionsTess = {};
+    if (typeof options === 'object' && Object.keys(options).length > 0) {
+      // The options provided by users contain a mix of options for Tesseract.js
+      // and parameters passed through to Tesseract.
+      for (const param of Object.keys(options)) {
+        if (!param.startsWith('tessjs_') && !tessjsOptions.includes(param)) {
+          optionsTess[param] = options[param];
+        }
+      }
+    }
+    if (output.debug) {
+      optionsTess.debug_file = '/debugInternal.txt';
+      TessModule.FS.writeFile('/debugInternal.txt', '');
+    }
+    // If any parameters are changed here they are changed back at the end
+    if (Object.keys(optionsTess).length > 0) {
+      api.SaveParameters();
+      for (const prop of Object.keys(optionsTess)) {
+        api.SetVariable(prop, optionsTess[prop]);
+      }
+    }
+
+    const { workingOutput, skipRecognition } = processOutput(output);
+
+    // When the auto-rotate option is True, setImage is called with no angle,
+    // then the angle is calculated by Tesseract and then setImage is re-called.
+    // Otherwise, setImage is called once using the user-provided rotateRadiansFinal value.
+    let rotateRadiansFinal;
+    if (options.rotateAuto) {
+      // The angle is only detected if auto page segmentation is used
+      // Therefore, if this is not the mode specified by the user, it is enabled temporarily here
+      const psmInit = api.GetPageSegMode();
+      let psmEdit = false;
+      if (![PSM.AUTO, PSM.AUTO_ONLY, PSM.OSD].includes(psmInit)) {
+        psmEdit = true;
+        api.SetVariable('tessedit_pageseg_mode', String(PSM.AUTO));
+      }
+
+      setImage(TessModule, api, image);
+      api.FindLines();
+
+      // The function GetAngle will be replaced with GetGradient in 4.0.4,
+      // but for now we want to maintain compatibility.
+      // We can switch to only using GetGradient in v5.
+      const rotateRadiansCalc = api.GetGradient ? api.GetGradient() : api.GetAngle();
+
+      // Restore user-provided PSM setting
+      if (psmEdit) {
+        api.SetVariable('tessedit_pageseg_mode', String(psmInit));
+      }
+
+      // Small angles (<0.005 radians/~0.3 degrees) are ignored to save on runtime
+      if (Math.abs(rotateRadiansCalc) >= 0.005) {
+        rotateRadiansFinal = rotateRadiansCalc;
+        setImage(TessModule, api, image, rotateRadiansFinal);
+      } else {
+        // Image needs to be reset if run with different PSM setting earlier
+        if (psmEdit) {
+          setImage(TessModule, api, image);
+        }
+        rotateRadiansFinal = 0;
+      }
+    } else {
+      rotateRadiansFinal = options.rotateRadians || 0;
+      setImage(TessModule, api, image, rotateRadiansFinal);
+    }
+
+    const rec = options.rectangle;
+    if (typeof rec === 'object') {
+      api.SetRectangle(rec.left, rec.top, rec.width, rec.height);
+    }
+
+    if (!skipRecognition) {
+      if (legacy) {
+        api.SetVariable("tessedit_ocr_engine_mode", "0");
+      } else {
+        api.SetVariable("tessedit_ocr_engine_mode", "1");
+      }
+      api.Recognize(null);
+    } else {
+      if (output.layoutBlocks) {
+        api.AnalyseLayout();
+      }
+      log('Skipping recognition: all output options requiring recognition are disabled.');
+    }
+    const { pdfTitle } = options;
+    const { pdfTextOnly } = options;
+    const result = dump(TessModule, api, workingOutput, { pdfTitle, pdfTextOnly, skipRecognition });
+    result.rotateRadians = rotateRadiansFinal;
+
+    if (!skipRecognition && legacy && lstm) {
+      const deindent = (html) => {
+        const lines = html.split('\n');
+        if (lines[0].substring(0, 2) === '  ') {
+          for (let i = 0; i < lines.length; i += 1) {
+            if (lines[i].substring(0, 2) === '  ') {
+              lines[i] = lines[i].slice(2);
+            }
+          }
+        }
+        return lines.join('\n');
+      };
+      
+      api.SetVariable("tessedit_ocr_engine_mode", "1");
+      api.Recognize(null);
+      result.hocr2 = deindent(api.GetHOCRText());
+    } else {
+      result.hocr2 = "";
+    }
+
+    if (output.debug) TessModule.FS.unlink('/debugInternal.txt');
+
+    if (Object.keys(optionsTess).length > 0) {
+      api.RestoreParameters();
+    }
+
+    res.resolve(result);
+  } catch (err) {
+    res.reject(err.toString());
+  }
+};
+
+
+
 const detect = async ({ payload: { image } }, res) => {
   try {
     setImage(TessModule, api, image);
@@ -546,6 +679,7 @@ exports.dispatchHandlers = (packet, send) => {
     initialize,
     setParameters,
     recognize,
+    recognize2,
     getPDF,
     detect,
     terminate,
