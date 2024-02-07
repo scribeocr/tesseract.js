@@ -69,7 +69,7 @@
     "node-fetch": "^2.6.9",
     "opencollective-postinstall": "^2.0.3",
     "regenerator-runtime": "^0.13.3",
-    "tesseract.js-core": "scribeocr/tesseract.js-core#686842d",
+    "tesseract.js-core": "scribeocr/tesseract.js-core#06f8fbc",
     "wasm-feature-detect": "^1.2.11",
     "zlibjs": "^0.3.1"
   },
