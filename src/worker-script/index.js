@@ -469,7 +469,7 @@ const recognize2 = async ({
   payload: {
     image, options, output,
   },
-}, res) => {
+}, res, resB) => {
   try {
     const lstm = options.lstm || false;
     const legacy = options.legacy || false;
@@ -564,6 +564,8 @@ const recognize2 = async ({
     const result = dump(TessModule, api, workingOutput, { pdfTitle, pdfTextOnly, skipRecognition });
     result.rotateRadians = rotateRadiansFinal;
 
+    res.resolve(result);
+
     if (!skipRecognition && legacy && lstm) {
       const deindent = (html) => {
         const lines = html.split('\n');
@@ -590,7 +592,7 @@ const recognize2 = async ({
       api.RestoreParameters();
     }
 
-    res.resolve(result);
+    resB.resolve(result);
   } catch (err) {
     res.reject(err.toString());
   }
@@ -672,6 +674,23 @@ exports.dispatchHandlers = (packet, send) => {
 
   latestJob = res;
 
+  const resB = (status, data) => {
+    // Return only the necessary info to avoid sending unnecessarily large messages
+    const packetRes = {
+      jobId: `${packet.jobId}b`,
+      workerId: packet.workerId,
+      action: packet.action,
+    };
+    send({
+      ...packetRes,
+      status,
+      data,
+    });
+  };
+  resB.resolve = resB.bind(this, 'resolve');
+  resB.reject = resB.bind(this, 'reject');
+  resB.progress = resB.bind(this, 'progress');
+
   ({
     load,
     FS,
@@ -683,7 +702,7 @@ exports.dispatchHandlers = (packet, send) => {
     getPDF,
     detect,
     terminate,
-  })[packet.action](packet, res)
+  })[packet.action](packet, res, resB)
     .catch((err) => res.reject(err.toString()));
 };
 

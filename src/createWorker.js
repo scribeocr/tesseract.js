@@ -72,6 +72,32 @@ module.exports = async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, confi
     })
   );
 
+  const startJob2 = ({ id: jobId, action, payload }) => {
+    const promiseB = new Promise((resolve, reject) => {
+      log(`[${id}]: Start ${jobId}, action=${action}`);
+      // Using both `action` and `jobId` in case user provides non-unique `jobId`.
+      const promiseId = `${action}-${jobId}b`;
+      setResolve(promiseId, resolve);
+      setReject(promiseId, reject);
+    });
+
+    const promiseA = new Promise((resolve, reject) => {
+      log(`[${id}]: Start ${jobId}, action=${action}`);
+      // Using both `action` and `jobId` in case user provides non-unique `jobId`.
+      const promiseId = `${action}-${jobId}`;
+      setResolve(promiseId, resolve);
+      setReject(promiseId, reject);
+      send(worker, {
+        workerId: id,
+        jobId,
+        action,
+        payload,
+      });
+    });
+
+    return [promiseA, promiseB];
+  };
+
   const load = () => (
     console.warn('`load` is depreciated and should be removed from code (workers now come pre-loaded)')
   );
@@ -195,13 +221,12 @@ module.exports = async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, confi
   const recognize2 = async (image, opts = {}, output = {
     blocks: true, text: true, hocr: true, tsv: true,
   }, jobId) => (
-    startJob(createJob({
+    startJob2(createJob({
       id: jobId,
       action: 'recognize2',
       payload: { image: await loadImage(image), options: opts, output },
     }))
   );
-
 
   const getPDF = (title = 'Tesseract OCR Result', textonly = false, jobId) => {
     console.log('`getPDF` function is depreciated. `recognize` option `savePDF` should be used instead.');
