@@ -488,6 +488,23 @@ const recognize2 = async ({
       optionsTess.debug_file = '/debugInternal.txt';
       TessModule.FS.writeFile('/debugInternal.txt', '');
     }
+    if (output.debugVis) {
+      optionsTess.vis_file = '/debugVisInternal.txt';
+
+      // Enable debugging options
+      optionsTess.textord_tabfind_show_blocks = '1';
+      optionsTess.textord_tabfind_show_strokewidths = '1';
+      optionsTess.textord_tabfind_show_initialtabs = '1';
+      optionsTess.textord_tabfind_show_images = '1';
+      optionsTess.textord_tabfind_show_reject_blobs = '1';
+      optionsTess.textord_tabfind_show_finaltabs = '1';
+      optionsTess.textord_tabfind_show_columns = '1';
+      optionsTess.textord_tabfind_show_initial_partitions = '1';
+      optionsTess.textord_show_tables = '1';
+      optionsTess.textord_tabfind_show_partitions = '1';
+
+      TessModule.FS.writeFile('/debugVisInternal.txt', '');
+    }
     // If any parameters are changed here they are changed back at the end
     if (Object.keys(optionsTess).length > 0) {
       api.SaveParameters();
@@ -507,7 +524,7 @@ const recognize2 = async ({
       // Therefore, if this is not the mode specified by the user, it is enabled temporarily here
       const psmInit = api.GetPageSegMode();
       let psmEdit = false;
-      if (![PSM.AUTO, PSM.AUTO_ONLY, PSM.OSD].includes(psmInit)) {
+      if (![PSM.AUTO, PSM.AUTO_ONLY, PSM.OSD].includes(String(psmInit))) {
         psmEdit = true;
         api.SetVariable('tessedit_pageseg_mode', String(PSM.AUTO));
       }
@@ -528,10 +545,14 @@ const recognize2 = async ({
       // Small angles (<0.005 radians/~0.3 degrees) are ignored to save on runtime
       if (Math.abs(rotateRadiansCalc) >= 0.005) {
         rotateRadiansFinal = rotateRadiansCalc;
+        // Clear debug visualization file to avoid duplicative visualizations
+        if (output.debugVis) TessModule.FS.writeFile('/debugVisInternal.txt', '');
         setImage(TessModule, api, image, rotateRadiansFinal);
       } else {
         // Image needs to be reset if run with different PSM setting earlier
         if (psmEdit) {
+          // Clear debug visualization file to avoid duplicative visualizations
+          if (output.debugVis) TessModule.FS.writeFile('/debugVisInternal.txt', '');
           setImage(TessModule, api, image);
         }
         rotateRadiansFinal = 0;
@@ -564,6 +585,21 @@ const recognize2 = async ({
     const result = dump(TessModule, api, workingOutput, { pdfTitle, pdfTextOnly, skipRecognition });
     result.rotateRadians = rotateRadiansFinal;
 
+    if (output.debugVis) {
+      // Disable debugging options.
+      // This should happen before running the LSTM model to avoid duplicating visualizations.
+      api.SetVariable('textord_tabfind_show_blocks', '0');
+      api.SetVariable('textord_tabfind_show_strokewidths', '0');
+      api.SetVariable('textord_tabfind_show_initialtabs', '0');
+      api.SetVariable('textord_tabfind_show_images', '0');
+      api.SetVariable('textord_tabfind_show_reject_blobs', '0');
+      api.SetVariable('textord_tabfind_show_finaltabs', '0');
+      api.SetVariable('textord_tabfind_show_columns', '0');
+      api.SetVariable('textord_tabfind_show_initial_partitions', '0');
+      api.SetVariable('textord_show_tables', '0');
+      api.SetVariable('textord_tabfind_show_partitions', '0');
+    }
+
     res.resolve(result);
 
     if (!skipRecognition && legacy && lstm) {
@@ -587,6 +623,7 @@ const recognize2 = async ({
     }
 
     if (output.debug) TessModule.FS.unlink('/debugInternal.txt');
+    if (output.debugVis) TessModule.FS.unlink('/debugVisInternal.txt');
 
     if (Object.keys(optionsTess).length > 0) {
       api.RestoreParameters();

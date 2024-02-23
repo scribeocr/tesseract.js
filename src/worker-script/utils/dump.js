@@ -222,5 +222,6 @@ module.exports = (TessModule, api, output, options) => {
     oem: enumToString(api.oem(), 'OEM'),
     version: api.Version(),
     debug: output.debug ? TessModule.FS.readFile('/debugInternal.txt', { encoding: 'utf8', flags: 'a+' }) : null,
+    debugVis: output.debugVis ? TessModule.FS.readFile('/debugVisInternal.txt', { encoding: 'utf8', flags: 'a+' }) : null,
   };
 };

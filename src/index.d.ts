@@ -273,6 +273,8 @@ declare namespace Tesseract {
     imageGrey: string | null;
     imageBinary: string | null;
     rotateRadians: number | null;
+    debug: string | null;
+    debugVis: string | null;
     pdf: number[] | null;
   }
 }
