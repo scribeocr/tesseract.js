@@ -34,7 +34,11 @@ module.exports = () => {
         jobQueue.shift();
         runningWorkers[w.id] = job;
         try {
-          resolve(await w[action].apply(this, [...payload, job.id]));
+          const res1 = await w[action].apply(this, [...payload, job.id]);
+          resolve(res1);
+          // If an array of promises is returned, wait for all promises to resolve before dequeuing.
+          // If this did not happen, then every job could be assigned to the same worker.
+          if (Array.isArray(res1)) await Promise.allSettled(res1);
         } catch (err) {
           reject(err);
         } finally {
