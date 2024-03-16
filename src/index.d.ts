@@ -14,7 +14,7 @@ declare namespace Tesseract {
     getNumWorkers(): number
   }
 
-  interface Worker {
+  export interface Worker {
     load(jobId?: string): Promise<ConfigResult>
     writeText(path: string, text: string, jobId?: string): Promise<ConfigResult>
     readText(path: string, jobId?: string): Promise<ConfigResult>
@@ -23,7 +23,8 @@ declare namespace Tesseract {
     reinitialize(langs?: string | Lang[], oem?: OEM, config?: string | Partial<InitOptions>, jobId?: string): Promise<ConfigResult>
     setParameters(params: Partial<WorkerParams>, jobId?: string): Promise<ConfigResult>
     getImage(type: imageType): string
-    recognize(image: ImageLike, options?: Partial<RecognizeOptions>, output?: Partial<OutputFormats>, jobId?: string): Promise<RecognizeResult>
+    recognize<T extends Partial<OutputFormats> = {}>(image: ImageLike, options?: Partial<RecognizeOptions>, output?: T, jobId?: string): Promise<RecognizeResult<T>>;
+    recognize2<T extends Partial<OutputFormats> = {}>(image: ImageLike, options?: Partial<RecognizeOptions>, output?: T, jobId?: string): Promise<[Promise<RecognizeResult<T>>, Promise<RecognizeResult<T>>]>;
     detect(image: ImageLike, jobId?: string): Promise<DetectResult>
     terminate(jobId?: string): Promise<ConfigResult>
     getPDF(title?: string, textonly?: boolean, jobId?: string):Promise<GetPDFResult>
@@ -104,10 +105,11 @@ declare namespace Tesseract {
     jobId: string
     data: any
   }
-  interface RecognizeResult {
-    jobId: string
-    data: Page
+  interface RecognizeResult<T extends Partial<OutputFormats> = {}> {
+    jobId: string;
+    data: Page<T>;
   }
+
   interface GetPDFResult {
     jobId: string
     data: number[]
@@ -156,7 +158,7 @@ declare namespace Tesseract {
     GREY = 1,
     BINARY = 2
   }
-  type ImageLike = string | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement
+  type ImageLike = string | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ArrayBuffer
     | CanvasRenderingContext2D | File | Blob | ImageData | Buffer | OffscreenCanvas;
   interface Block {
     paragraphs: Paragraph[];
@@ -252,7 +254,7 @@ declare namespace Tesseract {
     block: Block;
     page: Page;
   }
-  interface Page {
+  interface Page<T extends Partial<OutputFormats> = {}> {
     blocks: Block[] | null;
     confidence: number;
     lines: Line[];
@@ -264,18 +266,18 @@ declare namespace Tesseract {
     text: string;
     version: string;
     words: Word[];
-    hocr: string | null;
-    tsv: string | null;
-    box: string | null;
-    unlv: string | null;
+    hocr: T extends { hocr: true } ? string : null;
+    tsv: T extends { tsv: true } ? string : null;
+    box: T extends { box: true } ? string : null;
+    unlv: T extends { unlv: true } ? string : null;
     sd: string | null;
-    imageColor: string | null;
-    imageGrey: string | null;
-    imageBinary: string | null;
+    imageColor: T extends { imageColor: true } ? string : null;
+    imageGrey: T extends { imageGrey: true } ? string | null : null;
+    imageBinary: T extends { imageBinary: true } ? string | null : null;
     rotateRadians: number | null;
     debug: string | null;
     debugVis: string | null;
-    pdf: number[] | null;
+    pdf: T extends { pdf: true } ? number[] | null : null;
   }
 }
 
