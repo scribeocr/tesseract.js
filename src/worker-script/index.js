@@ -502,6 +502,7 @@ const recognize2 = async ({
       optionsTess.textord_tabfind_show_initial_partitions = '1';
       optionsTess.textord_show_tables = '1';
       optionsTess.textord_tabfind_show_partitions = '1';
+      optionsTess.textord_tabfind_show_vlines_scrollview = '1';
 
       TessModule.FS.writeFile('/debugVisInternal.txt', '');
     }
@@ -598,6 +599,7 @@ const recognize2 = async ({
       api.SetVariable('textord_tabfind_show_initial_partitions', '0');
       api.SetVariable('textord_show_tables', '0');
       api.SetVariable('textord_tabfind_show_partitions', '0');
+      api.SetVariable('textord_tabfind_show_vlines_scrollview', '0');
     }
 
     res.resolve(result);
@@ -618,6 +620,8 @@ const recognize2 = async ({
       api.SetVariable("tessedit_ocr_engine_mode", "1");
       api.Recognize(null);
       result.hocr2 = deindent(api.GetHOCRText());
+      // Re-read debug file since more lines are added for LSTM
+      result.debug = output.debug ? TessModule.FS.readFile('/debugInternal.txt', { encoding: 'utf8', flags: 'a+' }) : null;
     } else {
       result.hocr2 = "";
     }
