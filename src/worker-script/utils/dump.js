@@ -154,7 +154,6 @@ module.exports = (TessModule, api, output, options) => {
           choices: [],
 
           text: !options.skipRecognition ? ri.GetUTF8Text(RIL_WORD) : null,
-          textRaw: !options.skipRecognition ? ri.GetUTF8TextRaw(RIL_WORD) : null,
           confidence: !options.skipRecognition ? ri.Confidence(RIL_WORD) : null,
           baseline: ri.getBaseline(RIL_WORD),
           bbox: ri.getBoundingBox(RIL_WORD),
