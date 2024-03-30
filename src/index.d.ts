@@ -180,6 +180,11 @@ declare namespace Tesseract {
     y1: number;
     has_baseline: boolean;
   }
+  interface RowAttributes {
+    ascenders: number;
+    descenders: number;
+    row_height: number;
+  }
   interface Bbox {
     x0: number;
     y0: number;
@@ -191,6 +196,7 @@ declare namespace Tesseract {
     text: string;
     confidence: number;
     baseline: Baseline;
+    rowAttributes: RowAttributes
     bbox: Bbox;
     paragraph: Paragraph;
     block: Block;
