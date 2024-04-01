@@ -604,26 +604,16 @@ const recognize2 = async ({
 
     res.resolve(result);
 
+    let result2;
     if (!skipRecognition && legacy && lstm) {
-      const deindent = (html) => {
-        const lines = html.split('\n');
-        if (lines[0].substring(0, 2) === '  ') {
-          for (let i = 0; i < lines.length; i += 1) {
-            if (lines[i].substring(0, 2) === '  ') {
-              lines[i] = lines[i].slice(2);
-            }
-          }
-        }
-        return lines.join('\n');
-      };
-      
       api.SetVariable("tessedit_ocr_engine_mode", "1");
       api.Recognize(null);
-      result.hocr2 = deindent(api.GetHOCRText());
-      // Re-read debug file since more lines are added for LSTM
-      result.debug = output.debug ? TessModule.FS.readFile('/debugInternal.txt', { encoding: 'utf8', flags: 'a+' }) : null;
-    } else {
-      result.hocr2 = "";
+      // Intermediate images are only returned in the first promise.
+      // They would be identical, so there is no reason to incur more memory/runtime costs.
+      workingOutput.imageColor = false;
+      workingOutput.imageGrey = false;
+      workingOutput.imageBinary = false;
+      result2 = dump(TessModule, api, workingOutput, { pdfTitle, pdfTextOnly, skipRecognition });
     }
 
     if (output.debug) TessModule.FS.unlink('/debugInternal.txt');
@@ -633,7 +623,7 @@ const recognize2 = async ({
       api.RestoreParameters();
     }
 
-    resB.resolve(result);
+    resB.resolve(result2);
   } catch (err) {
     res.reject(err.toString());
   }
