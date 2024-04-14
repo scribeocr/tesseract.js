@@ -360,7 +360,7 @@ const processOutput = (output) => {
 
 // List of options for Tesseract.js (rather than passed through to Tesseract),
 // not including those with prefix "tessjs_"
-const tessjsOptions = ['rectangle', 'pdfTitle', 'pdfTextOnly', 'rotateAuto', 'rotateRadians', 'lstm', 'legacy'];
+const tessjsOptions = ['rectangle', 'pdfTitle', 'pdfTextOnly', 'rotateAuto', 'rotateRadians', 'lstm', 'legacy', 'upscale'];
 
 const recognize = async ({
   payload: {
@@ -368,6 +368,7 @@ const recognize = async ({
   },
 }, res) => {
   try {
+    const upscale = options.upscale || false;
     const optionsTess = {};
     if (typeof options === 'object' && Object.keys(options).length > 0) {
       // The options provided by users contain a mix of options for Tesseract.js
@@ -406,7 +407,7 @@ const recognize = async ({
         api.SetVariable('tessedit_pageseg_mode', String(PSM.AUTO));
       }
 
-      setImage(TessModule, api, image);
+      setImage(TessModule, api, image, 0, upscale);
       api.FindLines();
 
       // The function GetAngle will be replaced with GetGradient in 4.0.4,
@@ -422,17 +423,17 @@ const recognize = async ({
       // Small angles (<0.005 radians/~0.3 degrees) are ignored to save on runtime
       if (Math.abs(rotateRadiansCalc) >= 0.005) {
         rotateRadiansFinal = rotateRadiansCalc;
-        setImage(TessModule, api, image, rotateRadiansFinal);
+        setImage(TessModule, api, image, rotateRadiansFinal, upscale);
       } else {
         // Image needs to be reset if run with different PSM setting earlier
         if (psmEdit) {
-          setImage(TessModule, api, image);
+          setImage(TessModule, api, image, 0, upscale);
         }
         rotateRadiansFinal = 0;
       }
     } else {
       rotateRadiansFinal = options.rotateRadians || 0;
-      setImage(TessModule, api, image, rotateRadiansFinal);
+      setImage(TessModule, api, image, rotateRadiansFinal, upscale);
     }
 
     const rec = options.rectangle;
@@ -473,6 +474,7 @@ const recognize2 = async ({
   try {
     const lstm = options.lstm || false;
     const legacy = options.legacy || false;
+    const upscale = options.upscale || false;
 
     const optionsTess = {};
     if (typeof options === 'object' && Object.keys(options).length > 0) {
@@ -530,7 +532,7 @@ const recognize2 = async ({
         api.SetVariable('tessedit_pageseg_mode', String(PSM.AUTO));
       }
 
-      setImage(TessModule, api, image);
+      setImage(TessModule, api, image, 0, upscale);
       api.FindLines();
 
       // The function GetAngle will be replaced with GetGradient in 4.0.4,
@@ -548,19 +550,19 @@ const recognize2 = async ({
         rotateRadiansFinal = rotateRadiansCalc;
         // Clear debug visualization file to avoid duplicative visualizations
         if (output.debugVis) TessModule.FS.writeFile('/debugVisInternal.txt', '');
-        setImage(TessModule, api, image, rotateRadiansFinal);
+        setImage(TessModule, api, image, rotateRadiansFinal, upscale);
       } else {
         // Image needs to be reset if run with different PSM setting earlier
         if (psmEdit) {
           // Clear debug visualization file to avoid duplicative visualizations
           if (output.debugVis) TessModule.FS.writeFile('/debugVisInternal.txt', '');
-          setImage(TessModule, api, image);
+          setImage(TessModule, api, image, 0, upscale);
         }
         rotateRadiansFinal = 0;
       }
     } else {
       rotateRadiansFinal = options.rotateRadians || 0;
-      setImage(TessModule, api, image, rotateRadiansFinal);
+      setImage(TessModule, api, image, rotateRadiansFinal, upscale);
     }
 
     const rec = options.rectangle;

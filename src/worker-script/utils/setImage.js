@@ -7,7 +7,7 @@ const bmp = require('bmp-js');
  * @function set image in tesseract for recognition
  * @access public
  */
-module.exports = (TessModule, api, image, angle = 0) => {
+module.exports = (TessModule, api, image, angle = 0, upscale = false) => {
   // Check for bmp magic numbers (42 and 4D in hex)
   const isBmp = (image[0] === 66 && image[1] === 77) || (image[1] === 66 && image[0] === 77);
 
@@ -27,6 +27,6 @@ module.exports = (TessModule, api, image, angle = 0) => {
     TessModule.FS.writeFile('/input', image);
   }
 
-  const res = api.SetImageFile(exif, angle);
+  const res = api.SetImageFile(exif, angle, upscale);
   if (res === 1) throw Error('Error attempting to read image.');
 };
