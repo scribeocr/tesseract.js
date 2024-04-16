@@ -84,8 +84,26 @@ module.exports = (TessModule, api, output, options) => {
   // In this case, fields that require text recognition are skipped.
   if (output.blocks || output.layoutBlocks) {
     ri.Begin();
+    let skipBlock = false;
+
+    function riNext() {
+      if (skipBlock) {
+        skipBlock = false;
+        return ri.Next(RIL_BLOCK);
+      } else {
+        return ri.Next(RIL_SYMBOL);
+      }
+    }
+
     do {
       if (ri.IsAtBeginningOf(RIL_BLOCK)) {
+        const blocktype = enumToString(ri.BlockType(), 'PT');
+
+        if (['HORZ_LINE', 'VERT_LINE'].includes(blocktype)) {
+          skipBlock = true;
+          continue;
+        } 
+
         const poly = ri.BlockPolygon();
         let polygon = null;
         // BlockPolygon() returns null when automatic page segmentation is off
@@ -211,7 +229,7 @@ module.exports = (TessModule, api, output, options) => {
         } while (ci.Next());
         // TessModule.destroy(i);
       }
-    } while (ri.Next(RIL_SYMBOL));
+    } while (riNext());
     TessModule.destroy(ri);
   }
 
