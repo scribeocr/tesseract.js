@@ -1,3 +1,8 @@
+# Fork Overview
+
+This repo contains a fork used for [Scribe OCR](https://github.com/scribeocr/scribeocr).  Any code in this repo that differs from the source project should be considered part of Scribe OCR from a licensing standpoint, and is AGPL licensed.  Everything below in this readme is from the source project, not this fork.
+
+
 <p align="center">
   <a href="https://tesseract.projectnaptha.com/">
     <picture>
