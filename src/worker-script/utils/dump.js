@@ -127,8 +127,7 @@ module.exports = (TessModule, api, output, options) => {
           // text: !options.skipRecognition ? ri.GetUTF8Text(RIL_BLOCK) : null,
           confidence: !options.skipRecognition ? ri.Confidence(RIL_BLOCK) : null,
           baseline: ri.getBaseline(RIL_BLOCK),
-          bbox: null,
-          // bbox: ri.getBoundingBox(RIL_BLOCK),
+          bbox: ri.getBoundingBox(RIL_BLOCK),
           blocktype: enumToString(ri.BlockType(), 'PT'),
           polygon,
         };
@@ -141,8 +140,7 @@ module.exports = (TessModule, api, output, options) => {
           // text: !options.skipRecognition ? ri.GetUTF8Text(RIL_PARA) : null,
           confidence: !options.skipRecognition ? ri.Confidence(RIL_PARA) : null,
           baseline: ri.getBaseline(RIL_PARA),
-          bbox: null,
-          // bbox: ri.getBoundingBox(RIL_PARA),
+          bbox: ri.getBoundingBox(RIL_PARA),
           is_ltr: !!ri.ParagraphIsLtr(),
         };
         block.paragraphs.push(para);
