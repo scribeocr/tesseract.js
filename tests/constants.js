@@ -3,7 +3,7 @@ const IMAGE_PATH = 'http://localhost:3000/tests/assets/images';
 const IS_BROWSER = typeof window !== 'undefined' && typeof window.document !== 'undefined';
 const OPTIONS = {
   cachePath: './tests/assets/traineddata',
-  corePath: '../node_modules/tesseract.js-core',
+  corePath: '../node_modules/@scribe.js/tesseract.js-core',
   ...(IS_BROWSER ? { workerPath: '../dist/worker.min.js' } : {}),
 };
 const SIMPLE_TEXT = 'Tesseract.js\n';

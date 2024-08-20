@@ -14,14 +14,14 @@ module.exports = async (oem, _, res) => {
     res.progress({ status: statusText, progress: 0 });
     if (simdSupport) {
       if ([OEM.DEFAULT, OEM.LSTM_ONLY].includes(oem)) {
-        TesseractCore = require('tesseract.js-core/tesseract-core-simd-lstm');
+        TesseractCore = require('@scribe.js/tesseract.js-core/tesseract-core-simd-lstm');
       } else {
-        TesseractCore = require('tesseract.js-core/tesseract-core-simd');
+        TesseractCore = require('@scribe.js/tesseract.js-core/tesseract-core-simd');
       }
     } else if ([OEM.DEFAULT, OEM.LSTM_ONLY].includes(oem)) {
-      TesseractCore = require('tesseract.js-core/tesseract-core-lstm');
+      TesseractCore = require('@scribe.js/tesseract.js-core/tesseract-core-lstm');
     } else {
-      TesseractCore = require('tesseract.js-core/tesseract-core');
+      TesseractCore = require('@scribe.js/tesseract.js-core/tesseract-core');
     }
     res.progress({ status: statusText, progress: 1 });
   }
