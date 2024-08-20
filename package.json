@@ -1,7 +1,7 @@
 {
-  "name": "tesseract.js",
+  "name": "@scribe.js/tesseract.js",
   "version": "5.0.4",
-  "description": "Pure Javascript Multilingual OCR",
+  "description": "Fork of tesseract.js used for scribe.js. Pure Javascript Multilingual OCR",
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "unpkg": "dist/tesseract.min.js",
@@ -29,11 +29,8 @@
   "browser": {
     "./src/worker/node/index.js": "./src/worker/browser/index.js"
   },
-  "author": "",
-  "contributors": [
-    "jeromewu"
-  ],
-  "license": "Apache-2.0",
+  "author": "Balearica",
+  "license": "AGPL-3.0",
   "devDependencies": {
     "@babel/core": "^7.21.4",
     "@babel/eslint-parser": "^7.21.3",
@@ -69,7 +66,7 @@
     "node-fetch": "^2.6.9",
     "opencollective-postinstall": "^2.0.3",
     "regenerator-runtime": "^0.13.3",
-    "tesseract.js-core": "scribeocr/tesseract.js-core#ed2b922",
+    "@scribe.js/tesseract.js-core": "^5.1.0",
     "wasm-feature-detect": "^1.2.11",
     "zlibjs": "^0.3.1"
   },
@@ -78,14 +75,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/naptha/tesseract.js.git"
+    "url": "https://github.com/scribeocr/tesseract.js.git"
   },
   "bugs": {
-    "url": "https://github.com/naptha/tesseract.js/issues"
+    "url": "https://github.com/scribeocr/tesseract.js/issues"
   },
-  "homepage": "https://github.com/naptha/tesseract.js",
-  "collective": {
-    "type": "opencollective",
-    "url": "https://opencollective.com/tesseractjs"
-  }
+  "homepage": "https://github.com/scribeocr/scribe.js"
 }
