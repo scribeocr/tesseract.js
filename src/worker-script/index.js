@@ -505,6 +505,7 @@ const recognize2 = async ({
       optionsTess.textord_show_tables = '1';
       optionsTess.textord_tabfind_show_partitions = '1';
       optionsTess.textord_tabfind_show_vlines_scrollview = '1';
+      optionsTess.tessedit_dump_pageseg_images = '1';
 
       TessModule.FS.writeFile('/debugVisInternal.txt', '');
     }
@@ -522,6 +523,10 @@ const recognize2 = async ({
     // then the angle is calculated by Tesseract and then setImage is re-called.
     // Otherwise, setImage is called once using the user-provided rotateRadiansFinal value.
     let rotateRadiansFinal;
+
+    // TODO: Auto upscaling only works when auto rotation is enabled.
+    // This is fine for Scribe.js but we may want to change this in the future.
+    let upscaleFinal = upscale;
     if (options.rotateAuto) {
       // The angle is only detected if auto page segmentation is used
       // Therefore, if this is not the mode specified by the user, it is enabled temporarily here
@@ -540,6 +545,11 @@ const recognize2 = async ({
       // We can switch to only using GetGradient in v5.
       const rotateRadiansCalc = api.GetGradient ? api.GetGradient() : api.GetAngle();
 
+      const estimatedResolution = api.GetEstimatedResolution();
+
+      upscaleFinal = estimatedResolution < 200 ? true : upscale;
+      const upscaleEdit = upscaleFinal !== upscale;
+
       // Restore user-provided PSM setting
       if (psmEdit) {
         api.SetVariable('tessedit_pageseg_mode', String(psmInit));
@@ -550,13 +560,13 @@ const recognize2 = async ({
         rotateRadiansFinal = rotateRadiansCalc;
         // Clear debug visualization file to avoid duplicative visualizations
         if (output.debugVis) TessModule.FS.writeFile('/debugVisInternal.txt', '');
-        setImage(TessModule, api, image, rotateRadiansFinal, upscale);
+        setImage(TessModule, api, image, rotateRadiansFinal, upscaleFinal);
       } else {
         // Image needs to be reset if run with different PSM setting earlier
-        if (psmEdit) {
+        if (psmEdit || upscaleEdit) {
           // Clear debug visualization file to avoid duplicative visualizations
           if (output.debugVis) TessModule.FS.writeFile('/debugVisInternal.txt', '');
-          setImage(TessModule, api, image, 0, upscale);
+          setImage(TessModule, api, image, 0, upscaleFinal);
         }
         rotateRadiansFinal = 0;
       }
@@ -572,9 +582,9 @@ const recognize2 = async ({
 
     if (!skipRecognition) {
       if (legacy) {
-        api.SetVariable("tessedit_ocr_engine_mode", "0");
+        api.SetVariable('tessedit_ocr_engine_mode', '0');
       } else {
-        api.SetVariable("tessedit_ocr_engine_mode", "1");
+        api.SetVariable('tessedit_ocr_engine_mode', '1');
       }
       api.Recognize(null);
     } else {
@@ -587,6 +597,7 @@ const recognize2 = async ({
     const { pdfTextOnly } = options;
     const result = dump(TessModule, api, workingOutput, { pdfTitle, pdfTextOnly, skipRecognition });
     result.rotateRadians = rotateRadiansFinal;
+    result.upscale = upscaleFinal;
 
     if (output.debugVis) {
       // Disable debugging options.
@@ -602,13 +613,14 @@ const recognize2 = async ({
       api.SetVariable('textord_show_tables', '0');
       api.SetVariable('textord_tabfind_show_partitions', '0');
       api.SetVariable('textord_tabfind_show_vlines_scrollview', '0');
+      api.SetVariable('tessedit_dump_pageseg_images', '0');
     }
 
     res.resolve(result);
 
     let result2;
     if (!skipRecognition && legacy && lstm) {
-      api.SetVariable("tessedit_ocr_engine_mode", "1");
+      api.SetVariable('tessedit_ocr_engine_mode', '1');
       api.Recognize(null);
       // Intermediate images are only returned in the first promise.
       // They would be identical, so there is no reason to incur more memory/runtime costs.
@@ -630,8 +642,6 @@ const recognize2 = async ({
     res.reject(err.toString());
   }
 };
-
-
 
 const detect = async ({ payload: { image } }, res) => {
   try {
