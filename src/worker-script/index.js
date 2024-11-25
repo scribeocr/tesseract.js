@@ -305,8 +305,6 @@ const initialize = async ({
       res.reject('initialization failed');
     }
 
-    params = defaultParams;
-    await setParameters({ payload: { params } });
     res.progress({
       workerId, status: statusText, progress: 1,
     });
