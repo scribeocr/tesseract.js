@@ -505,6 +505,7 @@ const recognize2 = async ({
       optionsTess.textord_tabfind_show_vlines_scrollview = '1';
       optionsTess.tessedit_dump_pageseg_images = '1';
       optionsTess.textord_debug_nontext = '1';
+      optionsTess.textord_show_word_blobs = '1';
 
       TessModule.FS.writeFile('/debugVisInternal.txt', '');
     }
@@ -614,6 +615,7 @@ const recognize2 = async ({
       api.SetVariable('textord_tabfind_show_vlines_scrollview', '0');
       api.SetVariable('tessedit_dump_pageseg_images', '0');
       api.SetVariable('textord_debug_nontext', '0');
+      api.SetVariable('textord_show_word_blobs', '0');
     }
 
     res.resolve(result);
