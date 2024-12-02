@@ -1,6 +1,6 @@
 {
   "name": "@scribe.js/tesseract.js",
-  "version": "5.1.5",
+  "version": "5.1.6",
   "description": "Fork of tesseract.js used for scribe.js. Pure Javascript Multilingual OCR",
   "main": "src/index.js",
   "types": "src/index.d.ts",
