@@ -65,7 +65,7 @@
     "node-fetch": "^2.6.9",
     "opencollective-postinstall": "^2.0.3",
     "regenerator-runtime": "^0.13.3",
-    "@scribe.js/tesseract.js-core": "^6.0.2",
+    "@scribe.js/tesseract.js-core": "^6.0.3",
     "wasm-feature-detect": "^1.2.11",
     "zlibjs": "^0.3.1"
   },
