@@ -27,7 +27,7 @@ declare namespace Tesseract {
     recognize2<T extends Partial<OutputFormats> = {}>(image: ImageLike, options?: Partial<RecognizeOptions>, output?: T, jobId?: string): Promise<[Promise<RecognizeResult<T>>, Promise<RecognizeResult<T>>]>;
     detect(image: ImageLike, jobId?: string): Promise<DetectResult>
     terminate(jobId?: string): Promise<ConfigResult>
-    getPDF(title?: string, textonly?: boolean, jobId?: string):Promise<GetPDFResult>
+    getPDF(title?: string, textonly?: boolean, jobId?: string): Promise<GetPDFResult>
   }
 
   interface Lang {
@@ -43,7 +43,7 @@ declare namespace Tesseract {
     load_number_dawg: string
     load_bigram_dawg: string
   }
-  
+
   type LoggerMessage = {
     jobId: string
     progress: number
@@ -51,7 +51,7 @@ declare namespace Tesseract {
     userJobId: string
     workerId: string
   }
-  
+
   interface WorkerOptions {
     corePath: string
     langPath: string
@@ -183,7 +183,7 @@ declare namespace Tesseract {
   interface RowAttributes {
     ascenders: number;
     descenders: number;
-    row_height: number;
+    rowHeight: number;
   }
   interface Bbox {
     x0: number;
