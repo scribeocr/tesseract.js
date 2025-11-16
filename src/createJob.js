@@ -6,6 +6,7 @@ module.exports = ({
   id: _id,
   action,
   payload = {},
+  priorityJob = false,
 }) => {
   let id = _id;
   if (typeof id === 'undefined') {
@@ -17,5 +18,6 @@ module.exports = ({
     id,
     action,
     payload,
+    priorityJob,
   };
 };

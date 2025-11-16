@@ -1,5 +1,4 @@
 const createJob = require('./createJob');
-const { log } = require('./utils/log');
 const getId = require('./utils/getId');
 
 let schedulerCounter = 0;
@@ -27,14 +26,14 @@ module.exports = () => {
     }
   };
 
-  const queue = (action, payload) => (
+  const queue = (action, payload, priorityJob = false) => (
     new Promise((resolve, reject) => {
-      const job = createJob({ action, payload });
-      jobQueue.push(async (w) => {
+      const job = createJob({ action, payload, priorityJob });
+      const jobFunction = async (w) => {
         jobQueue.shift();
         runningWorkers[w.id] = job;
         try {
-          const res1 = await w[action].apply(this, [...payload, job.id]);
+          const res1 = await w[action].apply(this, [payload, job.id]);
           resolve(res1);
           // If an array of promises is returned, wait for all promises to resolve before dequeuing.
           // If this did not happen, then every job could be assigned to the same worker.
@@ -45,26 +44,41 @@ module.exports = () => {
           delete runningWorkers[w.id];
           dequeue();
         }
-      });
-      log(`[${id}]: Add ${job.id} to JobQueue`);
-      log(`[${id}]: JobQueue length=${jobQueue.length}`);
+      };
+
+      jobFunction.priorityJob = priorityJob;
+
+      // Priority jobs cut in line - insert before the first non-priority job
+      if (priorityJob) {
+        let insertIndex = 0;
+        for (let i = 0; i < jobQueue.length; i += 1) {
+          if (!jobQueue[i].priorityJob) {
+            insertIndex = i;
+            break;
+          }
+          insertIndex = i + 1;
+        }
+        jobQueue.splice(insertIndex, 0, jobFunction);
+      } else {
+        jobQueue.push(jobFunction);
+      }
+
       dequeue();
     })
   );
 
   const addWorker = (w) => {
     workers[w.id] = w;
-    log(`[${id}]: Add ${w.id}`);
-    log(`[${id}]: Number of workers=${getNumWorkers()}`);
     dequeue();
     return w.id;
   };
 
-  const addJob = async (action, ...payload) => {
+  const addJob = async (action, payload, priorityJob = false) => {
     if (getNumWorkers() === 0) {
       throw Error(`[${id}]: You need to have at least one worker before adding jobs`);
     }
-    return queue(action, payload);
+
+    return queue(action, payload, priorityJob);
   };
 
   const terminate = async () => {
