@@ -1,14 +1,21 @@
-const { createWorker, PSM } = Tesseract;
-let worker;
-before(async function cb() {
-  this.timeout(0);
-  worker = await createWorker("eng", 1, OPTIONS);
-  workerLegacy = await createWorker("eng", 0, OPTIONS);
-});
+import {
+  FORMATS, SIMPLE_PNG_BASE64, SIMPLE_JPG_BASE64, SIMPLE_TEXT,
+  COMSIC_TEXT, TESTOCR_TEXT, BILL_SPACED_TEXT, SIMPLE_WHITELIST_TEXT,
+  SIMPLE_TEXT_LEGACY, SIMPLE_TEXT_HALF, CHINESE_TEXT,
+  IS_BROWSER, IMAGE_PATH, TIMEOUT, OPTIONS,
+} from './constants.mjs';
 
 describe('recognize()', () => {
+  let worker;
+  let workerLegacy;
+  before(async function cb() {
+    this.timeout(0);
+    worker = await Tesseract.createWorker('eng', 1, OPTIONS);
+    workerLegacy = await Tesseract.createWorker('eng', 0, OPTIONS);
+  });
+
   describe('should read bmp, jpg, png and pbm format images', () => {
-    FORMATS.forEach(format => (
+    FORMATS.forEach((format) => (
       it(`support ${format} format`, async () => {
         await worker.reinitialize('eng');
         const { data: { text } } = await worker.recognize(`${IMAGE_PATH}/simple.${format}`);
@@ -68,7 +75,6 @@ describe('recognize()', () => {
       }).timeout(TIMEOUT)
     ));
   });
-
 
   describe('should recognize different langs', () => {
     [
@@ -141,8 +147,8 @@ describe('recognize()', () => {
 
   describe('should support all page seg modes (Legacy)', () => {
     Object
-      .keys(PSM)
-      .map(name => ({ name, mode: PSM[name] }))
+      .keys(Tesseract.PSM)
+      .map((name) => ({ name, mode: Tesseract.PSM[name] }))
       .forEach(({ name, mode }) => (
         it(`support PSM.${name} mode`, async () => {
           await workerLegacy.reinitialize(['eng', 'osd']);
@@ -157,9 +163,9 @@ describe('recognize()', () => {
 
   describe('should support all page seg modes except for PSM.OSD_ONLY (LSTM)', () => {
     Object
-      .keys(PSM)
+      .keys(Tesseract.PSM)
       .filter((x) => x !== 'OSD_ONLY')
-      .map(name => ({ name, mode: PSM[name] }))
+      .map((name) => ({ name, mode: Tesseract.PSM[name] }))
       .forEach(({ name, mode }) => (
         it(`support PSM.${name} mode`, async () => {
           await worker.reinitialize(['eng', 'osd']);
@@ -173,9 +179,9 @@ describe('recognize()', () => {
   });
 
   (IS_BROWSER ? describe.skip : describe)('should recognize image in Buffer format (Node.js only)', () => {
-    FORMATS.forEach(format => (
+    FORMATS.forEach((format) => (
       it(`support ${format} format`, async () => {
-        const buf = fs.readFileSync(path.join(__dirname, 'assets', 'images', `simple.${format}`));
+        const buf = fs.readFileSync(`${IMAGE_PATH}/simple.${format}`);
         await worker.reinitialize('eng');
         const { data: { text } } = await worker.recognize(buf);
         expect(text).to.be(SIMPLE_TEXT);
@@ -184,7 +190,7 @@ describe('recognize()', () => {
   });
 
   (IS_BROWSER ? describe : describe.skip)('should read image from img DOM element (browser only)', () => {
-    FORMATS.forEach(format => (
+    FORMATS.forEach((format) => (
       it(`support ${format} format`, async () => {
         const imageDOM = document.createElement('img');
         imageDOM.setAttribute('src', `${IMAGE_PATH}/simple.${format}`);
@@ -196,7 +202,7 @@ describe('recognize()', () => {
   });
 
   (IS_BROWSER ? describe : describe.skip)('should read image from video DOM element (browser only)', () => {
-    FORMATS.forEach(format => (
+    FORMATS.forEach((format) => (
       it(`support ${format} format`, async () => {
         const videoDOM = document.createElement('video');
         videoDOM.setAttribute('poster', `${IMAGE_PATH}/simple.${format}`);
@@ -209,7 +215,7 @@ describe('recognize()', () => {
 
   (IS_BROWSER ? describe : describe.skip)('should read video from canvas DOM element (browser only)', () => {
     // img tag is unable to render pbm, so let's skip it.
-    const formats = FORMATS.filter(f => f !== 'pbm');
+    const formats = FORMATS.filter((f) => f !== 'pbm');
     let canvasDOM = null;
     let imageDOM = null;
     let idx = 0;
@@ -230,7 +236,7 @@ describe('recognize()', () => {
       imageDOM.remove();
     });
 
-    formats.forEach(format => (
+    formats.forEach((format) => (
       it(`support ${format} format`, async () => {
         await worker.reinitialize('eng');
         const { data: { text } } = await worker.recognize(canvasDOM);
@@ -241,7 +247,7 @@ describe('recognize()', () => {
 
   (IS_BROWSER ? describe : describe.skip)('should read video from OffscreenCanvas (browser only)', () => {
     // img tag is unable to render pbm, so let's skip it.
-    const formats = FORMATS.filter(f => f !== 'pbm');
+    const formats = FORMATS.filter((f) => f !== 'pbm');
     let offscreenCanvas = null;
     let imageDOM = null;
     let idx = 0;
@@ -249,7 +255,7 @@ describe('recognize()', () => {
       imageDOM = document.createElement('img');
       imageDOM.setAttribute('crossOrigin', 'Anonymous');
       imageDOM.onload = () => {
-        offscreenCanvas = new OffscreenCanvas(imageDOM.width, imageDOM.height)
+        offscreenCanvas = new OffscreenCanvas(imageDOM.width, imageDOM.height);
         offscreenCanvas.getContext('2d').drawImage(imageDOM, 0, 0);
         done();
       };
@@ -262,12 +268,81 @@ describe('recognize()', () => {
       imageDOM.remove();
     });
 
-    formats.forEach(format => (
+    formats.forEach((format) => (
       it(`support ${format} format`, async () => {
         await worker.reinitialize('eng');
         const { data: { text } } = await worker.recognize(offscreenCanvas);
         expect(text).to.be(SIMPLE_TEXT);
       }).timeout(TIMEOUT)
     ));
+  });
+
+  describe('should support blocks (json) output', () => {
+    it('recongize large image', async () => {
+      await worker.reinitialize('eng');
+      const { data: { blocks } } = await worker.recognize(`${IMAGE_PATH}/testocr.png`, {}, { blocks: true });
+      expect(blocks[0].paragraphs[0].lines[0].words[0].symbols[0].text).to.be('T');
+      expect(blocks[0].paragraphs[0].lines[0].words[0].text).to.be('This');
+      expect(blocks[0].paragraphs[0].lines[0].text).to.be('This is a lot of 12 point text to test the\n');
+    }).timeout(TIMEOUT);
+
+    it('recongize image with special characters', async () => {
+      await worker.reinitialize('eng');
+      const { data: { blocks } } = await worker.recognize(`${IMAGE_PATH}/escape_chars.png`, {}, { blocks: true });
+      expect(blocks[0].paragraphs[0].lines[0].text).to.be('"Double Quotes"\n');
+      expect(blocks[0].paragraphs[0].lines[1].text).to.be('Back \\ Slash\n');
+    }).timeout(TIMEOUT);
+
+    it('recongize image with multiple choices', async () => {
+      await workerLegacy.reinitialize('eng');
+      const { data: { blocks } } = await workerLegacy.recognize(`${IMAGE_PATH}/bill.png`, {}, { blocks: true });
+      expect(blocks[0].paragraphs[1].lines[0].words[3].choices.length).to.be(3);
+      expect(blocks[0].paragraphs[1].lines[0].words[3].choices[1].text).to.be('100,000.0ll');
+    }).timeout(TIMEOUT);
+
+    it('recongize image with multiple blocks', async () => {
+      // This also implicitly checks that non-text blocks are ignored,
+      // as otherwise the length would be 5.
+      await worker.reinitialize('eng');
+      await worker.setParameters({
+        tessedit_pageseg_mode: Tesseract.PSM.AUTO,
+      });
+      const { data: { blocks } } = await worker.recognize(`${IMAGE_PATH}/bill.png`, {}, { blocks: true });
+      expect(blocks.length).to.be(4);
+    }).timeout(TIMEOUT);
+
+    it('recongize chinese image', async () => {
+      await worker.reinitialize('chi_tra');
+      const { data: { blocks } } = await worker.recognize(`${IMAGE_PATH}/chinese.png`, {}, { blocks: true });
+      expect(blocks[0].paragraphs[0].lines[0].words[0].symbols[0].text).to.be('繁');
+      expect(blocks[0].paragraphs[0].lines[0].words[0].text).to.be('繁體');
+      expect(blocks[0].paragraphs[0].lines[0].text).to.be('繁體 中 文 測試\n');
+    }).timeout(TIMEOUT);
+
+    it('should report RowAttributes', async () => {
+      await worker.reinitialize('eng');
+      const { data: { blocks } } = await worker.recognize(`${IMAGE_PATH}/testocr.png`, {}, { blocks: true });
+      const firstLine = blocks[0].paragraphs[0].lines[0];
+
+      expect(firstLine.rowAttributes).to.be.an('object');
+      expect(firstLine.rowAttributes.ascenders).to.be.a('number');
+      expect(firstLine.rowAttributes.descenders).to.be.a('number');
+      expect(firstLine.rowAttributes.rowHeight).to.be.a('number');
+
+      expect(firstLine.rowAttributes.ascenders).to.be.greaterThan(0);
+      expect(firstLine.rowAttributes.descenders).to.be.greaterThan(0);
+      expect(firstLine.rowAttributes.rowHeight).to.be.greaterThan(0);
+    }).timeout(TIMEOUT);
+  });
+
+  describe('should support layout blocks (json) output', () => {
+    it('recongize large image', async () => {
+      await worker.reinitialize('eng');
+      const { data: { layoutBlocks } } = await worker.recognize(`${IMAGE_PATH}/testocr.png`, {}, { text: false, layoutBlocks: true });
+      expect(layoutBlocks[0].bbox.x0).to.be(36);
+      expect(layoutBlocks[0].bbox.y0).to.be(92);
+      expect(layoutBlocks[0].bbox.x1).to.be(618);
+      expect(layoutBlocks[0].bbox.y1).to.be(361);
+    }).timeout(TIMEOUT);
   });
 });

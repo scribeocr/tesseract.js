@@ -1,29 +1,19 @@
-const { createWorker } = Tesseract;
-let worker;
-before(async function cb() {
-  this.timeout(0);
-  worker = await createWorker("osd", 0, OPTIONS);
-});
+import { IMAGE_PATH, TIMEOUT, OPTIONS } from './constants.mjs';
 
-describe('detect()', async () => {
-  it('should detect OSD', () => {
-    [
-      { name: 'cosmic.png', ans: { script: 'Latin' } },
-    ].forEach(async ({ name, ans: { script } }) => {
-      const { data: { script: s } } = await worker.detect(`${IMAGE_PATH}/${name}`);
-      expect(s).to.be(script);
-    });
+describe('detect()', () => {
+  let worker;
+  before(async function cb() {
+    this.timeout(0);
+    worker = await Tesseract.createWorker('osd', 0, OPTIONS);
+  });
+
+  it('should detect OSD', async () => {
+    const { data: { script: s } } = await worker.detect(`${IMAGE_PATH}/cosmic.png`);
+    expect(s).to.be('Latin');
   }).timeout(TIMEOUT);
-});
 
-
-describe('detect()', async () => {
-  it('should detect OSD (simplified interface)', () => {
-    [
-      { name: 'cosmic.png', ans: { script: 'Latin' } },
-    ].forEach(async ({ name, ans: { script } }) => {
-      const { data: { script: s } } = await Tesseract.detect(`${IMAGE_PATH}/${name}`, undefined, OPTIONS);
-      expect(s).to.be(script);
-    });
+  it('should detect OSD (simplified interface)', async () => {
+    const { data: { script: s } } = await Tesseract.detect(`${IMAGE_PATH}/cosmic.png`, OPTIONS);
+    expect(s).to.be('Latin');
   }).timeout(TIMEOUT);
 });

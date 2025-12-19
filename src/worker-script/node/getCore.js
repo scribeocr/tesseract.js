@@ -1,4 +1,4 @@
-const { simd } = require('wasm-feature-detect');
+const { simd, relaxedSimd } = require('wasm-feature-detect');
 const OEM = require('../../constants/OEM');
 
 let TesseractCore = null;
@@ -11,8 +11,15 @@ module.exports = async (oem, _, res) => {
     const statusText = 'loading tesseract core';
 
     const simdSupport = await simd();
+    const relaxedSimdSupport = await relaxedSimd();
     res.progress({ status: statusText, progress: 0 });
-    if (simdSupport) {
+    if (relaxedSimdSupport) {
+      if ([OEM.DEFAULT, OEM.LSTM_ONLY].includes(oem)) {
+        TesseractCore = require('@scribe.js/tesseract.js-core/tesseract-core-relaxedsimd-lstm');
+      } else {
+        TesseractCore = require('@scribe.js/tesseract.js-core/tesseract-core-relaxedsimd-lstm');
+      }
+    } else if (simdSupport) {
       if ([OEM.DEFAULT, OEM.LSTM_ONLY].includes(oem)) {
         TesseractCore = require('@scribe.js/tesseract.js-core/tesseract-core-simd-lstm');
       } else {
