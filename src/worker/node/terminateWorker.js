@@ -5,6 +5,6 @@
  * @function kill worker
  * @access public
  */
-module.exports = (worker) => {
+export default (worker) => {
   worker.terminate();
 };

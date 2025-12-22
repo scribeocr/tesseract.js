@@ -15,7 +15,7 @@
  * @author Jerome Wu <jeromewus@gmail.com>
  */
 
-module.exports = (page) => {
+export default (page) => {
   const blocks = [];
   const paragraphs = [];
   const lines = [];

@@ -1,7 +1,7 @@
 /*
  * PSM = Page Segmentation Mode
  */
-module.exports = {
+export default {
   OSD_ONLY: '0',
   AUTO_OSD: '1',
   AUTO_ONLY: '2',

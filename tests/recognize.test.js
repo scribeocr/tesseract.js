@@ -3,7 +3,7 @@ import {
   COMSIC_TEXT, TESTOCR_TEXT, BILL_SPACED_TEXT, SIMPLE_WHITELIST_TEXT,
   SIMPLE_TEXT_LEGACY, SIMPLE_TEXT_HALF, CHINESE_TEXT,
   IS_BROWSER, IMAGE_PATH, TIMEOUT, OPTIONS,
-} from './constants.mjs';
+} from './constants.js';
 
 describe('recognize()', () => {
   let worker;

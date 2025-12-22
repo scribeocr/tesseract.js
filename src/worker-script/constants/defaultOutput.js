@@ -2,7 +2,7 @@
  * default output formats for tesseract.js
  */
 
-module.exports = {
+export default {
   text: true,
   blocks: true,
   layoutBlocks: false,

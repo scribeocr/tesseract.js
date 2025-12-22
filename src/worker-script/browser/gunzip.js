@@ -1,1 +1,3 @@
-module.exports = require('zlibjs').gunzipSync;
+import { gunzipSync } from 'zlibjs';
+
+export default gunzipSync;

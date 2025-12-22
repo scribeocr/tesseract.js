@@ -1,8 +1,10 @@
-const { simd, relaxedSimd } = require('wasm-feature-detect');
-const coreVersion = require('../../../package.json').dependencies['@scribe.js/tesseract.js-core'];
+import { simd, relaxedSimd } from 'wasm-feature-detect';
 
-module.exports = async (lstmOnly, corePath, res) => {
-  if (typeof global.TesseractCore === 'undefined') {
+// Version is hardcoded to avoid JSON import issues in bundled browser code
+const coreVersion = '^7.0.1';
+
+export default async (lstmOnly, corePath, res) => {
+  if (typeof self.TesseractCore === 'undefined') {
     const statusText = 'loading tesseract core';
 
     res.progress({ status: statusText, progress: 0 });
@@ -40,18 +42,18 @@ module.exports = async (lstmOnly, corePath, res) => {
       }
     }
 
-    // Create a module named `global.TesseractCore`
-    global.importScripts(corePathImportFile);
+    // Create a module named `self.TesseractCore`
+    self.importScripts(corePathImportFile);
 
-    // Tesseract.js-core versions through 4.0.3 create a module named `global.TesseractCoreWASM`,
+    // Tesseract.js-core versions through 4.0.3 create a module named `self.TesseractCoreWASM`,
     // so we account for that here to preserve backwards compatibility.
     // This part can be removed when Tesseract.js-core v4.0.3 becomes incompatible for other reasons
-    if (typeof global.TesseractCore === 'undefined' && typeof global.TesseractCoreWASM !== 'undefined' && typeof WebAssembly === 'object') {
-      global.TesseractCore = global.TesseractCoreWASM;
-    } else if (typeof global.TesseractCore === 'undefined') {
+    if (typeof self.TesseractCore === 'undefined' && typeof self.TesseractCoreWASM !== 'undefined' && typeof WebAssembly === 'object') {
+      self.TesseractCore = self.TesseractCoreWASM;
+    } else if (typeof self.TesseractCore === 'undefined') {
       throw Error('Failed to load TesseractCore');
     }
     res.progress({ status: statusText, progress: 1 });
   }
-  return global.TesseractCore;
+  return self.TesseractCore;
 };

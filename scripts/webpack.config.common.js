@@ -1,4 +1,8 @@
-module.exports = {
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+
+export default {
   resolve: {
     fallback: {
       buffer: require.resolve('buffer/'),

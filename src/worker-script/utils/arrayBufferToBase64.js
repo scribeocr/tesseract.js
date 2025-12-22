@@ -2,7 +2,7 @@
 // Copyright 2011 Jon Leighton, MIT LICENSE
 
 /* eslint no-bitwise: 0 */
-module.exports = (arrayBuffer) => {
+export default (arrayBuffer) => {
   let base64 = '';
   const encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 

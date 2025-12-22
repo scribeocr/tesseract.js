@@ -1,4 +1,4 @@
-const { Worker } = require('worker_threads');
+import { Worker } from 'worker_threads';
 
 /**
  * spawnWorker
@@ -7,4 +7,4 @@ const { Worker } = require('worker_threads');
  * @function fork a new process in node
  * @access public
  */
-module.exports = ({ workerPath }) => new Worker(workerPath);
+export default ({ workerPath }) => new Worker(workerPath);

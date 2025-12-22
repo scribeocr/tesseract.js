@@ -4,7 +4,7 @@
  * By default tesseract.js uses LSTM_ONLY mode.
  *
  */
-module.exports = {
+export default {
   TESSERACT_ONLY: 0,
   LSTM_ONLY: 1,
   TESSERACT_LSTM_COMBINED: 2,

@@ -7,15 +7,16 @@
  * @author Guillermo Webster <gui@mit.edu>
  * @author Jerome Wu <jeromewus@gmail.com>
  */
-require('regenerator-runtime/runtime');
-const isURL = require('is-url');
-const dump = require('./utils/dump');
-const env = require('../utils/getEnvironment')('type');
-const setImage = require('./utils/setImage');
-const defaultParams = require('./constants/defaultParams');
-const defaultOutput = require('./constants/defaultOutput');
-const { log, setLogging } = require('../utils/log');
-const PSM = require('../constants/PSM');
+import 'regenerator-runtime/runtime.js';
+import isURL from 'is-url';
+import dump from './utils/dump.js';
+import getEnvironment from '../utils/getEnvironment.js';
+const env = getEnvironment('type');
+import setImage from './utils/setImage.js';
+import defaultParams from './constants/defaultParams.js';
+import defaultOutput from './constants/defaultOutput.js';
+import { log, setLogging } from '../utils/log.js';
+import PSM from '../constants/PSM.js';
 
 /*
  * Tesseract Module returned by TesseractCore.
@@ -699,7 +700,7 @@ const terminate = async (_, res) => {
  * @param {object} data.payload - data for the job
  * @param {function} send - trigger job to work
  */
-exports.dispatchHandlers = (packet, send) => {
+export const dispatchHandlers = (packet, send) => {
   const res = (status, data) => {
     // Return only the necessary info to avoid sending unnecessarily large messages
     const packetRes = {
@@ -759,6 +760,6 @@ exports.dispatchHandlers = (packet, send) => {
  * @access public
  * @param {object} adapter - implementation of the worker, different in browser and node environment
  */
-exports.setAdapter = (_adapter) => {
+export const setAdapter = (_adapter) => {
   adapter = _adapter;
 };

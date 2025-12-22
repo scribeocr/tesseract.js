@@ -112,7 +112,7 @@
 /**
   * @type {Languages}
   */
-module.exports = {
+export default {
   AFR: 'afr',
   AMH: 'amh',
   ARA: 'ara',

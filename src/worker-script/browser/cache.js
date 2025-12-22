@@ -1,6 +1,6 @@
-const { set, get, del } = require('idb-keyval');
+import { set, get, del } from 'idb-keyval';
 
-module.exports = {
+export default {
   readCache: get,
   writeCache: set,
   deleteCache: del,

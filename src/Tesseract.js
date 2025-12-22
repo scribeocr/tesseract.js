@@ -1,4 +1,4 @@
-const createWorker = require('./createWorker');
+import createWorker from './createWorker.js';
 
 const recognize = async (image, langs, options) => {
   const worker = await createWorker(langs, 1, options);
@@ -16,7 +16,9 @@ const detect = async (image, options) => {
     });
 };
 
-module.exports = {
+export default {
   recognize,
   detect,
 };
+
+export { recognize, detect };

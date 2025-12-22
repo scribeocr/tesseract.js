@@ -5,7 +5,7 @@
  * @function create a new Worker in browser
  * @access public
  */
-module.exports = ({ workerPath, workerBlobURL }) => {
+export default ({ workerPath, workerBlobURL }) => {
   let worker;
   if (Blob && URL && workerBlobURL) {
     const blob = new Blob([`importScripts("${workerPath}");`], {

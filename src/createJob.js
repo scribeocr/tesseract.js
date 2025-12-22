@@ -1,8 +1,8 @@
-const getId = require('./utils/getId');
+import getId from './utils/getId.js';
 
 let jobCounter = 0;
 
-module.exports = ({
+export default ({
   id: _id,
   action,
   payload = {},

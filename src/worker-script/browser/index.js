@@ -8,15 +8,15 @@
  * @author Jerome Wu <jeromewus@gmail.com>
  */
 
-const worker = require('..');
-const getCore = require('./getCore');
-const gunzip = require('./gunzip');
-const cache = require('./cache');
+import * as worker from '../index.js';
+import getCore from './getCore.js';
+import gunzip from './gunzip.js';
+import cache from './cache.js';
 
 /*
  * register message handler
  */
-global.addEventListener('message', ({ data }) => {
+self.addEventListener('message', ({ data }) => {
   worker.dispatchHandlers(data, (obj) => postMessage(obj));
 });
 

@@ -1,9 +1,9 @@
 /*
  * default params for tesseract.js
  */
-const PSM = require('../../constants/PSM');
+import PSM from '../../constants/PSM.js';
 
-module.exports = {
+export default {
   tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
   tessedit_char_whitelist: '',
   tessjs_create_hocr: '1',

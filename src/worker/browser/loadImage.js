@@ -66,4 +66,4 @@ const loadImage = async (image) => {
   return new Uint8Array(data);
 };
 
-module.exports = loadImage;
+export default loadImage;

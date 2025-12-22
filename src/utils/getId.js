@@ -1,3 +1,3 @@
-module.exports = (prefix, cnt) => (
+export default (prefix, cnt) => (
   `${prefix}-${cnt}-${Math.random().toString(16).slice(3, 8)}`
 );

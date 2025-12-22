@@ -1,9 +1,8 @@
-const util = require('util');
-const fs = require('fs');
-// Use built-in fetch if available, otherwise fallback to node-fetch
-const fetch = global.fetch || require('node-fetch');
-const isURL = require('is-url');
+import util from 'util';
+import fs from 'fs';
+import isURL from 'is-url';
 
+const fetch = global.fetch;
 const readFile = util.promisify(fs.readFile);
 
 /**
@@ -13,7 +12,7 @@ const readFile = util.promisify(fs.readFile);
  * @function load image from different source
  * @access public
  */
-module.exports = async (image) => {
+export default async (image) => {
   let data = image;
   if (typeof image === 'undefined') {
     return image;

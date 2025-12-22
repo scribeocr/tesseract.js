@@ -8,13 +8,13 @@
  * @author Jerome Wu <jeromewus@gmail.com>
  */
 
-// Use built-in fetch if available, otherwise fallback to node-fetch
-const fetch = global.fetch || require('node-fetch');
-const { parentPort } = require('worker_threads');
-const worker = require('..');
-const getCore = require('./getCore');
-const gunzip = require('./gunzip');
-const cache = require('./cache');
+import { parentPort } from 'worker_threads';
+import * as worker from '../index.js';
+import getCore from './getCore.js';
+import gunzip from './gunzip.js';
+import cache from './cache.js';
+
+const fetch = global.fetch;
 
 /*
  * register message handler

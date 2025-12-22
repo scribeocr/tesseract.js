@@ -1,3 +1,5 @@
+import { IMAGE_PATH, OPTIONS } from './constants.js';
+
 const { createScheduler, createWorker } = Tesseract;
 
 let workers = [];

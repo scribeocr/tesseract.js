@@ -1,8 +1,13 @@
-const constants = require('../tests/constants');
-global.expect = require('expect.js');
-global.fs = require('fs');
-global.path = require('path');
-global.Tesseract = require('../src');
+import * as constants from '../tests/constants.js';
+import expect from 'expect.js';
+import fs from 'fs';
+import path from 'path';
+import * as Tesseract from '../src/index.js';
+
+global.expect = expect;
+global.fs = fs;
+global.path = path;
+global.Tesseract = Tesseract;
 
 Object.keys(constants).forEach((key) => {
   global[key] = constants[key];

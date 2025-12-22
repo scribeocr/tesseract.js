@@ -1,4 +1,4 @@
-module.exports = function (config) {
+export default function (config) {
   config.set({
     frameworks: ['mocha'],
     files: [
@@ -8,9 +8,9 @@ module.exports = function (config) {
       { pattern: 'node_modules/@scribe.js/tesseract.js-core/tesseract-core-simd.wasm.js', included: false, served: true },
       { pattern: 'node_modules/@scribe.js/tesseract.js-core/tesseract-core-relaxedsimd-lstm.wasm.js', included: false, served: true },
       { pattern: 'node_modules/@scribe.js/tesseract.js-core/tesseract-core-relaxedsimd.wasm.js', included: false, served: true },
-      { pattern: 'tests/constants.mjs', included: false, served: true },
+      { pattern: 'tests/constants.js', included: false, served: true },
       { pattern: 'node_modules/expect.js/index.js', included: true },
-      { pattern: 'tests/*.test.mjs', type: 'module' },
+      { pattern: 'tests/*.test.js', type: 'module' },
       { pattern: 'tests/assets/images/**', included: false, served: true },
     ],
     reporters: ['progress'],
@@ -18,7 +18,7 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: false,
-    browsers: ['ChromeHeadless', 'FirefoxHeadless'],
+    browsers: ['ChromeHeadless'],
     singleRun: true,
     concurrency: 1,
     proxies: {
@@ -30,4 +30,4 @@ module.exports = function (config) {
       '/tests/assets/images': '/base/tests/assets/images',
     },
   });
-};
+}

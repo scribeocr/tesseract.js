@@ -1,7 +1,7 @@
-const util = require('util');
-const fs = require('fs');
+import util from 'util';
+import fs from 'fs';
 
-module.exports = {
+export default {
   readCache: util.promisify(fs.readFile),
   writeCache: util.promisify(fs.writeFile),
   deleteCache: (path) => (

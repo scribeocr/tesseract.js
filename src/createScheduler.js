@@ -1,9 +1,9 @@
-const createJob = require('./createJob');
-const getId = require('./utils/getId');
+import createJob from './createJob.js';
+import getId from './utils/getId.js';
 
 let schedulerCounter = 0;
 
-module.exports = () => {
+export default () => {
   const id = getId('Scheduler', schedulerCounter);
   const workers = {};
   const runningWorkers = {};

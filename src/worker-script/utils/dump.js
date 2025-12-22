@@ -7,8 +7,8 @@
  * @author Guillermo Webster <gui@mit.edu>
  * @author Jerome Wu <jeromewus@gmail.com>
  */
-const arrayBufferToBase64 = require('./arrayBufferToBase64');
-const imageType = require('../../constants/imageType');
+import arrayBufferToBase64 from './arrayBufferToBase64.js';
+import imageType from '../../constants/imageType.js';
 
 /**
  * deindent
@@ -39,7 +39,7 @@ const deindent = (html) => {
  * @function dump recognition result to a JSON object
  * @access public
  */
-module.exports = (TessModule, api, output, options) => {
+export default (TessModule, api, output, options) => {
   const enumToString = (value, prefix) => (
     Object.keys(TessModule)
       .filter((e) => (e.startsWith(`${prefix}_`) && TessModule[e] === value))

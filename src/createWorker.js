@@ -1,21 +1,21 @@
-const resolvePaths = require('./utils/resolvePaths');
-const circularize = require('./utils/circularize');
-const createJob = require('./createJob');
-const { log } = require('./utils/log');
-const getId = require('./utils/getId');
-const OEM = require('./constants/OEM');
-const {
+import resolvePaths from './utils/resolvePaths.js';
+import circularize from './utils/circularize.js';
+import createJob from './createJob.js';
+import { log } from './utils/log.js';
+import getId from './utils/getId.js';
+import OEM from './constants/OEM.js';
+import {
   defaultOptions,
   spawnWorker,
   terminateWorker,
   onMessage,
   loadImage,
   send,
-} = require('./worker/node');
+} from './worker/node/index.js';
 
 let workerCounter = 0;
 
-module.exports = async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, config = {}) => {
+export default async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, config = {}) => {
   const id = getId('Worker', workerCounter);
   const {
     logger,

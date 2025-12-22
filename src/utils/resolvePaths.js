@@ -1,8 +1,10 @@
-const isBrowser = require('./getEnvironment')('type') === 'browser';
+import getEnvironment from './getEnvironment.js';
+
+const isBrowser = getEnvironment('type') === 'browser';
 
 const resolveURL = isBrowser ? s => (new URL(s, window.location.href)).href : s => s; // eslint-disable-line
 
-module.exports = (options) => {
+export default (options) => {
   const opts = { ...options };
   ['corePath', 'workerPath', 'langPath'].forEach((key) => {
     if (options[key]) {

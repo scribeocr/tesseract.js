@@ -5,6 +5,6 @@
  * @function send packet to worker and create a job
  * @access public
  */
-module.exports = async (worker, packet) => {
+export default async (worker, packet) => {
   worker.postMessage(packet);
 };

@@ -1,4 +1,4 @@
-import { IMAGE_PATH, TIMEOUT, OPTIONS } from './constants.mjs';
+import { IMAGE_PATH, TIMEOUT, OPTIONS } from './constants.js';
 
 describe('detect()', () => {
   let worker;

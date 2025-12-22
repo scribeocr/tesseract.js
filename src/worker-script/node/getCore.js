@@ -1,12 +1,12 @@
-const { simd, relaxedSimd } = require('wasm-feature-detect');
-const OEM = require('../../constants/OEM');
+import { simd, relaxedSimd } from 'wasm-feature-detect';
+import OEM from '../../constants/OEM.js';
 
 let TesseractCore = null;
 /*
  * getCore is a sync function to load and return
  * TesseractCore.
  */
-module.exports = async (oem, _, res) => {
+export default async (oem, _, res) => {
   if (TesseractCore === null) {
     const statusText = 'loading tesseract core';
 
@@ -15,20 +15,20 @@ module.exports = async (oem, _, res) => {
     res.progress({ status: statusText, progress: 0 });
     if (relaxedSimdSupport) {
       if ([OEM.DEFAULT, OEM.LSTM_ONLY].includes(oem)) {
-        TesseractCore = require('@scribe.js/tesseract.js-core/tesseract-core-relaxedsimd-lstm');
+        TesseractCore = (await import('@scribe.js/tesseract.js-core/tesseract-core-relaxedsimd-lstm.js')).default;
       } else {
-        TesseractCore = require('@scribe.js/tesseract.js-core/tesseract-core-relaxedsimd-lstm');
+        TesseractCore = (await import('@scribe.js/tesseract.js-core/tesseract-core-relaxedsimd.js')).default;
       }
     } else if (simdSupport) {
       if ([OEM.DEFAULT, OEM.LSTM_ONLY].includes(oem)) {
-        TesseractCore = require('@scribe.js/tesseract.js-core/tesseract-core-simd-lstm');
+        TesseractCore = (await import('@scribe.js/tesseract.js-core/tesseract-core-simd-lstm.js')).default;
       } else {
-        TesseractCore = require('@scribe.js/tesseract.js-core/tesseract-core-simd');
+        TesseractCore = (await import('@scribe.js/tesseract.js-core/tesseract-core-simd.js')).default;
       }
     } else if ([OEM.DEFAULT, OEM.LSTM_ONLY].includes(oem)) {
-      TesseractCore = require('@scribe.js/tesseract.js-core/tesseract-core-lstm');
+      TesseractCore = (await import('@scribe.js/tesseract.js-core/tesseract-core-lstm.js')).default;
     } else {
-      TesseractCore = require('@scribe.js/tesseract.js-core/tesseract-core');
+      TesseractCore = (await import('@scribe.js/tesseract.js-core/tesseract-core.js')).default;
     }
     res.progress({ status: statusText, progress: 1 });
   }

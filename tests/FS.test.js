@@ -1,4 +1,4 @@
-import { SIMPLE_TEXT, TIMEOUT, OPTIONS } from './constants.mjs';
+import { SIMPLE_TEXT, TIMEOUT, OPTIONS } from './constants.js';
 
 describe('FS', () => {
   let worker;
