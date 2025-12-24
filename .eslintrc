@@ -1,11 +1,16 @@
 {
   "extends": "airbnb-base",
   "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
   "env": {
     "browser": true,
     "node": true,
     "mocha": true,
-    "worker": true
+    "worker": true,
+    "es2020": true
   },
   "rules": {
     "no-underscore-dangle": 0,

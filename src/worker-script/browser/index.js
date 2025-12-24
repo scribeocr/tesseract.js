@@ -16,7 +16,7 @@ import cache from './cache.js';
 /*
  * register message handler
  */
-self.addEventListener('message', ({ data }) => {
+globalThis.addEventListener('message', ({ data }) => {
   worker.dispatchHandlers(data, (obj) => postMessage(obj));
 });
 

@@ -1,7 +1,6 @@
 import resolvePaths from './utils/resolvePaths.js';
 import circularize from './utils/circularize.js';
 import createJob from './createJob.js';
-import { log } from './utils/log.js';
 import getId from './utils/getId.js';
 import OEM from './constants/OEM.js';
 import {
@@ -49,7 +48,6 @@ export default async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, config 
 
   const startJob = ({ id: jobId, action, payload }) => (
     new Promise((resolve, reject) => {
-      log(`[${id}]: Start ${jobId}, action=${action}`);
       // Using both `action` and `jobId` in case user provides non-unique `jobId`.
       const promiseId = `${action}-${jobId}`;
       promises[promiseId] = { resolve, reject };
@@ -64,14 +62,12 @@ export default async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, config 
 
   const startJob2 = ({ id: jobId, action, payload }) => {
     const promiseB = new Promise((resolve, reject) => {
-      log(`[${id}]: Start ${jobId}, action=${action}`);
       // Using both `action` and `jobId` in case user provides non-unique `jobId`.
       const promiseId = `${action}-${jobId}b`;
       promises[promiseId] = { resolve, reject };
     });
 
     const promiseA = new Promise((resolve, reject) => {
-      log(`[${id}]: Start ${jobId}, action=${action}`);
       // Using both `action` and `jobId` in case user provides non-unique `jobId`.
       const promiseId = `${action}-${jobId}`;
       promises[promiseId] = { resolve, reject };
@@ -216,15 +212,6 @@ export default async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, config 
     }))
   );
 
-  const getPDF = (title = 'Tesseract OCR Result', textonly = false, jobId) => {
-    console.log('`getPDF` function is depreciated. `recognize` option `savePDF` should be used instead.');
-    return startJob(createJob({
-      id: jobId,
-      action: 'getPDF',
-      payload: { title, textonly },
-    }));
-  };
-
   const detect = async (image, jobId) => {
     if (lstmOnlyCore) throw Error('`worker.detect` requires Legacy model, which was not loaded.');
 
@@ -250,16 +237,13 @@ export default async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, config 
   };
 
   onMessage(worker, ({
-    workerId, jobId, status, action, data,
+    jobId, status, action, data,
   }) => {
     const promiseId = `${action}-${jobId}`;
     if (status === 'resolve') {
-      log(`[${workerId}]: Complete ${jobId}`);
       let d = data;
       if (action === 'recognize') {
         d = circularize(data);
-      } else if (action === 'getPDF') {
-        d = Array.from({ ...data, length: Object.keys(data).length });
       }
       promises[promiseId].resolve({ jobId, data: d });
       delete promises[promiseId];
@@ -291,7 +275,6 @@ export default async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, config 
     setParameters,
     recognize,
     recognize2,
-    getPDF,
     detect,
     terminate,
   };

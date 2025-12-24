@@ -1,7 +1,6 @@
 declare namespace Tesseract {
   function createScheduler(): Scheduler
   function createWorker(langs?: string | Lang[], oem?: OEM, options?: Partial<WorkerOptions>, config?: string | Partial<InitOptions>): Promise<Worker>
-  function setLogging(logging: boolean): void
 
   interface Scheduler {
     addWorker(worker: Worker): string
@@ -25,7 +24,6 @@ declare namespace Tesseract {
     recognize2<T extends Partial<OutputFormats> = {}>(image: ImageLike, options?: Partial<RecognizeOptions>, output?: T, jobId?: string): Promise<[Promise<RecognizeResult<T>>, Promise<RecognizeResult<T>>]>;
     detect(image: ImageLike, jobId?: string): Promise<DetectResult>
     terminate(jobId?: string): Promise<ConfigResult>
-    getPDF(title?: string, textonly?: boolean, jobId?: string): Promise<GetPDFResult>
   }
 
   interface Lang {
@@ -108,10 +106,6 @@ declare namespace Tesseract {
     data: Page<T>;
   }
 
-  interface GetPDFResult {
-    jobId: string
-    data: number[]
-  }
   interface DetectResult {
     jobId: string
     data: DetectData

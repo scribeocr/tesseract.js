@@ -12,7 +12,6 @@ import createWorker from './createWorker.js';
 import languages from './constants/languages.js';
 import OEM from './constants/OEM.js';
 import PSM from './constants/PSM.js';
-import { setLogging } from './utils/log.js';
 
 export {
   languages,
@@ -20,7 +19,6 @@ export {
   PSM,
   createScheduler,
   createWorker,
-  setLogging,
 };
 
 export default {
@@ -29,5 +27,4 @@ export default {
   PSM,
   createScheduler,
   createWorker,
-  setLogging,
 };

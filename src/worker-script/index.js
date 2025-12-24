@@ -12,7 +12,6 @@ import getEnvironment from '../utils/getEnvironment.js';
 import setImage from './utils/setImage.js';
 import defaultParams from './constants/defaultParams.js';
 import defaultOutput from './constants/defaultOutput.js';
-import { log, setLogging } from '../utils/log.js';
 import PSM from '../constants/PSM.js';
 import isURL from '../utils/isURL.js';
 
@@ -33,9 +32,7 @@ let loadLanguageLangsWorker;
 let loadLanguageOptionsWorker;
 let dataFromCache = false;
 
-const load = async ({ workerId, jobId, payload: { options: { lstmOnly, corePath, logging } } }, res) => { // eslint-disable-line max-len
-  setLogging(logging);
-
+const load = async ({ workerId, jobId, payload: { options: { lstmOnly, corePath } } }, res) => { // eslint-disable-line max-len
   const statusText = 'initializing tesseract';
 
   if (!TessModule) {
@@ -62,8 +59,7 @@ const load = async ({ workerId, jobId, payload: { options: { lstmOnly, corePath,
   }
 };
 
-const FS = async ({ workerId, payload: { method, args } }, res) => {
-  log(`[${workerId}]: FS.${method}`);
+const FS = async ({ payload: { method, args } }, res) => {
   res.resolve(TessModule.FS[method](...args));
 };
 
@@ -111,7 +107,6 @@ res) => {
     try {
       const _data = await readCache(`${cachePath || '.'}/${lang}.traineddata`);
       if (typeof _data !== 'undefined') {
-        log(`[${workerId}]: Load ${lang}.traineddata from cache`);
         data = _data;
         dataFromCache = true;
       } else {
@@ -120,7 +115,6 @@ res) => {
     // Attempt to fetch new .traineddata file
     } catch (e) {
       newData = true;
-      log(`[${workerId}]: Load ${lang}.traineddata from ${langPath}`);
       if (typeof _lang === 'string') {
         let path = null;
 
@@ -178,9 +172,8 @@ res) => {
     if (newData && ['write', 'refresh', undefined].includes(cacheMethod)) {
       try {
         await adapter.writeCache(`${cachePath || '.'}/${lang}.traineddata`, data);
+      // eslint-disable-next-line no-empty
       } catch (err) {
-        log(`[${workerId}]: Failed to write ${lang}.traineddata to cache due to error:`);
-        log(err.toString());
       }
     }
 
@@ -286,16 +279,12 @@ const initialize = async ({
         // (in addition to the normal debug file location).
         const debugStr = TessModule.FS.readFile('/debugDev.txt', { encoding: 'utf8', flags: 'a+' });
         if (dataFromCache && /components are not present/.test(debugStr)) {
-          log('Data from cache missing requested OEM model. Attempting to refresh cache with new language data.');
           // In this case, language data is re-loaded
           await loadLanguage({ workerId, payload: { langs: loadLanguageLangsWorker, options: loadLanguageOptionsWorker } }); // eslint-disable-line max-len
           status = api.Init(null, langs, oem, configFile);
           if (status === -1) {
-            log('Language data refresh failed.');
             const delCachePromise2 = langsArr.map((lang) => adapter.deleteCache(`${loadLanguageOptionsWorker.cachePath || '.'}/${lang}.traineddata`));
             await Promise.all(delCachePromise2);
-          } else {
-            log('Language data refresh successful.');
           }
         }
       }
@@ -312,20 +301,6 @@ const initialize = async ({
   } catch (err) {
     res.reject(err.toString());
   }
-};
-
-const getPDFInternal = (title, textonly) => {
-  const pdfRenderer = new TessModule.TessPDFRenderer('tesseract-ocr', '/', textonly);
-  pdfRenderer.BeginDocument(title);
-  pdfRenderer.AddImage(api);
-  pdfRenderer.EndDocument();
-  TessModule._free(pdfRenderer);
-
-  return TessModule.FS.readFile('/tesseract-ocr.pdf');
-};
-
-const getPDF = async ({ payload: { title, textonly } }, res) => {
-  res.resolve(getPDFInternal(title, textonly));
 };
 
 // Combines default output with user-specified options and
@@ -441,11 +416,8 @@ const recognize = async ({
 
     if (!skipRecognition) {
       api.Recognize(null);
-    } else {
-      if (output.layoutBlocks) {
-        api.AnalyseLayout();
-      }
-      log('Skipping recognition: all output options requiring recognition are disabled.');
+    } else if (output.layoutBlocks) {
+      api.AnalyseLayout();
     }
     const { pdfTitle } = options;
     const { pdfTextOnly } = options;
@@ -587,11 +559,8 @@ const recognize2 = async ({
         api.SetVariable('tessedit_ocr_engine_mode', '1');
       }
       api.Recognize(null);
-    } else {
-      if (output.layoutBlocks) {
-        api.AnalyseLayout();
-      }
-      log('Skipping recognition: all output options requiring recognition are disabled.');
+    } else if (output.layoutBlocks) {
+      api.AnalyseLayout();
     }
     const { pdfTitle } = options;
     const { pdfTextOnly } = options;
@@ -744,7 +713,6 @@ export const dispatchHandlers = (packet, send) => {
     setParameters,
     recognize,
     recognize2,
-    getPDF,
     detect,
     terminate,
   })[packet.action](packet, res, resB)

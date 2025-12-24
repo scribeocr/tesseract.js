@@ -5,9 +5,9 @@
 
 function promisifyRequest(request) {
   return new Promise((resolve, reject) => {
-    // @ts-ignore - file size hacks
+    // eslint-disable-next-line no-multi-assign
     request.oncomplete = request.onsuccess = () => resolve(request.result);
-    // @ts-ignore - file size hacks
+    // eslint-disable-next-line no-multi-assign
     request.onabort = request.onerror = () => reject(request.error);
   });
 }
@@ -21,6 +21,7 @@ function createStore(dbName, storeName) {
     dbp.then((db) => {
       // It seems like Safari sometimes likes to just close the connection.
       // It's supposed to fire this event when that happens. Let's hope it does!
+      // eslint-disable-next-line no-return-assign, no-param-reassign
       db.onclose = () => (dbp = undefined);
     }, () => { });
     return dbp;
