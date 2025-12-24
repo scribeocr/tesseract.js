@@ -1,4 +1,4 @@
-import { simd, relaxedSimd } from 'wasm-feature-detect';
+import { simd, relaxedSimd } from '../../utils/wasmFeatureDetect.js';
 import OEM from '../../constants/OEM.js';
 
 let TesseractCore = null;
@@ -25,10 +25,8 @@ export default async (oem, _, res) => {
       } else {
         TesseractCore = (await import('@scribe.js/tesseract.js-core/tesseract-core-simd.js')).default;
       }
-    } else if ([OEM.DEFAULT, OEM.LSTM_ONLY].includes(oem)) {
-      TesseractCore = (await import('@scribe.js/tesseract.js-core/tesseract-core-lstm.js')).default;
     } else {
-      TesseractCore = (await import('@scribe.js/tesseract.js-core/tesseract-core.js')).default;
+      throw Error('This runtime is not supported (WASM SIMD required).');
     }
     res.progress({ status: statusText, progress: 1 });
   }

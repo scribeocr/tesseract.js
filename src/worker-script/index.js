@@ -7,16 +7,16 @@
  * @author Guillermo Webster <gui@mit.edu>
  * @author Jerome Wu <jeromewus@gmail.com>
  */
-import 'regenerator-runtime/runtime.js';
-import isURL from 'is-url';
 import dump from './utils/dump.js';
 import getEnvironment from '../utils/getEnvironment.js';
-const env = getEnvironment('type');
 import setImage from './utils/setImage.js';
 import defaultParams from './constants/defaultParams.js';
 import defaultOutput from './constants/defaultOutput.js';
 import { log, setLogging } from '../utils/log.js';
 import PSM from '../constants/PSM.js';
+import isURL from '../utils/isURL.js';
+
+const env = getEnvironment('type');
 
 /*
  * Tesseract Module returned by TesseractCore.
@@ -130,7 +130,6 @@ res) => {
         const langPathDownload = langPath || (lstmOnly ? `https://cdn.jsdelivr.net/npm/@tesseract.js-data/${lang}/4.0.0_best_int` : `https://cdn.jsdelivr.net/npm/@tesseract.js-data/${lang}/4.0.0`);
 
         // For Node.js, langPath may be a URL or local file path
-        // The is-url package is used to tell the difference
         // For the browser version, langPath is assumed to be a URL
         if (env !== 'node' || isURL(langPathDownload) || langPathDownload.startsWith('moz-extension://') || langPathDownload.startsWith('chrome-extension://') || langPathDownload.startsWith('file://')) { /** When langPathDownload is an URL */
           path = langPathDownload.replace(/\/$/, '');
@@ -162,7 +161,7 @@ res) => {
     const isGzip = (data[0] === 31 && data[1] === 139) || (data[1] === 31 && data[0] === 139);
 
     if (isGzip) {
-      data = adapter.gunzip(data);
+      data = await adapter.gunzip(data);
     }
 
     if (TessModule) {

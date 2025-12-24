@@ -20,8 +20,7 @@
     "test:node": "NODE_OPTIONS='--import=./scripts/test-helper.js' nyc mocha --exit --bail ./tests/*.test.js",
     "test:node:all": "npm run test:node",
     "lint": "eslint src",
-    "lint:fix": "eslint --fix src",
-    "postinstall": "opencollective-postinstall || true"
+    "lint:fix": "eslint --fix src"
   },
   "browser": {
     "./src/worker/node/index.js": "./src/worker/browser/index.js"
@@ -60,14 +59,7 @@
     "webpack-dev-middleware": "^6.0.2"
   },
   "dependencies": {
-    "@scribe.js/tesseract.js-core": "^7.0.1",
-    "bmp-js": "^0.1.0",
-    "idb-keyval": "^6.2.0",
-    "is-url": "^1.2.4",
-    "opencollective-postinstall": "^2.0.3",
-    "regenerator-runtime": "^0.13.3",
-    "wasm-feature-detect": "^1.8.0",
-    "zlibjs": "^0.3.1"
+    "@scribe.js/tesseract.js-core": "^7.0.1"
   },
   "overrides": {
     "@rollup/pluginutils": "^5.0.2"

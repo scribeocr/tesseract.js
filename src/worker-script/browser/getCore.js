@@ -1,4 +1,4 @@
-import { simd, relaxedSimd } from 'wasm-feature-detect';
+import { simd, relaxedSimd } from '../../utils/wasmFeatureDetect.js';
 
 // Version is hardcoded to avoid JSON import issues in bundled browser code
 const coreVersion = '^7.0.1';
@@ -35,10 +35,8 @@ export default async (lstmOnly, corePath, res) => {
         } else {
           corePathImportFile = `${corePathImport.replace(/\/$/, '')}/tesseract-core-simd.wasm.js`;
         }
-      } else if (lstmOnly) {
-        corePathImportFile = `${corePathImport.replace(/\/$/, '')}/tesseract-core-lstm.wasm.js`;
       } else {
-        corePathImportFile = `${corePathImport.replace(/\/$/, '')}/tesseract-core.wasm.js`;
+        throw Error('This runtime is not supported (WASM SIMD required).');
       }
     }
 

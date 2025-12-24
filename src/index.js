@@ -7,10 +7,8 @@
  * @author Guillermo Webster <gui@mit.edu>
  * @author Jerome Wu <jeromewus@gmail.com>
  */
-import 'regenerator-runtime/runtime.js';
 import createScheduler from './createScheduler.js';
 import createWorker from './createWorker.js';
-import Tesseract from './Tesseract.js';
 import languages from './constants/languages.js';
 import OEM from './constants/OEM.js';
 import PSM from './constants/PSM.js';
@@ -25,8 +23,6 @@ export {
   setLogging,
 };
 
-export const { recognize, detect } = Tesseract;
-
 export default {
   languages,
   OEM,
@@ -34,5 +30,4 @@ export default {
   createScheduler,
   createWorker,
   setLogging,
-  ...Tesseract,
 };

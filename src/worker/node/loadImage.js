@@ -1,6 +1,6 @@
 import util from 'util';
 import fs from 'fs';
-import isURL from 'is-url';
+import isURL from '../../utils/isURL.js';
 
 const fetch = global.fetch;
 const readFile = util.promisify(fs.readFile);
