@@ -1,0 +1,3 @@
+[submodule "tesseract.js-core"]
+	path = tesseract.js-core
+	url = git@github.com:scribeocr/tesseract.js-core.git

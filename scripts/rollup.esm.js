@@ -1,4 +1,3 @@
-import commonjs from '@rollup/plugin-commonjs';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 
 export default [
@@ -10,6 +9,6 @@ export default [
       sourcemap: true,
       banner: '/* eslint-disable */',
     },
-    plugins: [commonjs(), sourcemaps()],
+    plugins: [sourcemaps()],
   },
 ];
