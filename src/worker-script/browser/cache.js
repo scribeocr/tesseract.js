@@ -42,7 +42,7 @@ function defaultGetStore() {
  * @param key
  * @param customStore Method to get a custom store. Use with caution (see the docs).
  */
-function get(key, customStore = defaultGetStore()) {
+export function readCache(key, customStore = defaultGetStore()) {
   return customStore('readonly', (store) => promisifyRequest(store.get(key)));
 }
 /**
@@ -52,7 +52,7 @@ function get(key, customStore = defaultGetStore()) {
  * @param value
  * @param customStore Method to get a custom store. Use with caution (see the docs).
  */
-function set(key, value, customStore = defaultGetStore()) {
+export function writeCache(key, value, customStore = defaultGetStore()) {
   return customStore('readwrite', (store) => {
     store.put(value, key);
     return promisifyRequest(store.transaction);
@@ -65,18 +65,9 @@ function set(key, value, customStore = defaultGetStore()) {
  * @param key
  * @param customStore Method to get a custom store. Use with caution (see the docs).
  */
-function del(key, customStore = defaultGetStore()) {
+export function deleteCache(key, customStore = defaultGetStore()) {
   return customStore('readwrite', (store) => {
     store.delete(key);
     return promisifyRequest(store.transaction);
   });
 }
-
-export default {
-  readCache: get,
-  writeCache: set,
-  deleteCache: del,
-  checkCache: (path) => (
-    get(path).then((v) => typeof v !== 'undefined')
-  ),
-};

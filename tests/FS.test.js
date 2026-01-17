@@ -1,4 +1,6 @@
 import { SIMPLE_TEXT, TIMEOUT, OPTIONS } from './constants.js';
+import Tesseract from '../src/index.js';
+import { expect } from '../node_modules/chai/chai.js';
 
 describe('FS', () => {
   let worker;
@@ -12,7 +14,7 @@ describe('FS', () => {
     await worker.FS('writeFile', [path, SIMPLE_TEXT]);
     const { data } = await worker.FS('readFile', [path, { encoding: 'utf8' }]);
     await worker.FS('unlink', [path]);
-    expect(data.toString()).to.be(SIMPLE_TEXT);
+    expect(data.toString()).to.equal(SIMPLE_TEXT);
   }).timeout(TIMEOUT);
 
   it('should write and read text from FS (using writeFile, readFile)', async () => {
@@ -20,6 +22,6 @@ describe('FS', () => {
     await worker.writeText(path, SIMPLE_TEXT);
     const { data } = await worker.readText(path);
     await worker.removeFile(path);
-    expect(data.toString()).to.be(SIMPLE_TEXT);
+    expect(data.toString()).to.equal(SIMPLE_TEXT);
   }).timeout(TIMEOUT);
 });

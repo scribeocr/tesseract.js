@@ -1,8 +1,7 @@
 {
   "extends": "airbnb-base",
-  "parser": "@babel/eslint-parser",
   "parserOptions": {
-    "ecmaVersion": 2020,
+    "ecmaVersion": 2022,
     "sourceType": "module"
   },
   "env": {
@@ -10,14 +9,17 @@
     "node": true,
     "mocha": true,
     "worker": true,
-    "es2020": true
+    "es2022": true
   },
+  "root": true,
   "rules": {
     "no-underscore-dangle": 0,
     "no-console": 0,
     "global-require": 0,
     "camelcase": 0,
     "no-control-regex": 0,
+    "default-param-last": 0,
+    "import/no-relative-packages": 0,
     "import/prefer-default-export": 0,
     // Airbnb disallows ForOfStatement based on the bizarre belief that loops are not readable
     // https://github.com/airbnb/javascript/issues/1271

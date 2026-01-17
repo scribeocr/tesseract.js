@@ -4,7 +4,6 @@ export const IS_BROWSER = typeof window !== 'undefined' && typeof window.documen
 export const OPTIONS = {
   cachePath: './tests/assets/traineddata',
   corePath: './tesseract.js-core',
-  ...(IS_BROWSER ? { workerPath: '../dist/worker.min.js' } : {}),
 };
 export const SIMPLE_TEXT = 'Tesseract.js\n';
 export const SIMPLE_TEXT_LEGACY = 'Tesseractjs\n';

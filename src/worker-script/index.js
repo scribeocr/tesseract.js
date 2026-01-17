@@ -1,21 +1,225 @@
-/**
- *
- * Worker script for browser and node
- *
- * @fileoverview Worker script for browser and node
- * @author Kevin Kwok <antimatter15@gmail.com>
- * @author Guillermo Webster <gui@mit.edu>
- * @author Jerome Wu <jeromewus@gmail.com>
- */
-import dump from './utils/dump.js';
 import getEnvironment from '../utils/getEnvironment.js';
-import setImage from './utils/setImage.js';
-import defaultParams from './constants/defaultParams.js';
-import defaultOutput from './constants/defaultOutput.js';
 import PSM from '../constants/PSM.js';
 import isURL from '../utils/isURL.js';
+import { simd, relaxedSimd } from '../utils/wasmFeatureDetect.js';
+import OEM from '../constants/OEM.js';
+import arrayBufferToBase64 from './utils/arrayBufferToBase64.js';
+import imageType from '../constants/imageType.js';
 
 const env = getEnvironment('type');
+
+const defaultParams = {
+  tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
+  tessedit_char_whitelist: '',
+  tessjs_create_hocr: '1',
+  tessjs_create_tsv: '1',
+  tessjs_create_box: '0',
+  tessjs_create_unlv: '0',
+  tessjs_create_osd: '0',
+};
+
+const defaultOutput = {
+  text: true,
+  blocks: true,
+  layoutBlocks: false,
+  hocr: true,
+  tsv: true,
+  box: false,
+  unlv: false,
+  osd: false,
+  pdf: false,
+  imageColor: false,
+  imageGrey: false,
+  imageBinary: false,
+  debug: false,
+};
+
+const cache = {
+  readCache: async (...args) => {
+    let readCacheImp;
+    if (env === 'browser') {
+      readCacheImp = (await import('./browser/cache.js')).readCache;
+    } else {
+      readCacheImp = (await import('./node/cache.js')).readCache;
+    }
+    return readCacheImp(...args);
+  },
+  writeCache: async (...args) => {
+    let writeCacheImp;
+    if (env === 'browser') {
+      writeCacheImp = (await import('./browser/cache.js')).writeCache;
+    } else {
+      writeCacheImp = (await import('./node/cache.js')).writeCache;
+    }
+    return writeCacheImp(...args);
+  },
+  deleteCache: async (...args) => {
+    let deleteCacheImp;
+    if (env === 'browser') {
+      deleteCacheImp = (await import('./browser/cache.js')).deleteCache;
+    } else {
+      deleteCacheImp = (await import('./node/cache.js')).deleteCache;
+    }
+    return deleteCacheImp(...args);
+  },
+};
+
+/**
+ * setImage
+ *
+ * @name setImage
+ * @function set image in tesseract for recognition
+ * @access public
+ */
+const setImage = (TessModule, api, image, angle = 0, upscale = false) => {
+  const exif = parseInt(image.slice(0, 500).join(' ').match(/1 18 0 3 0 0 0 1 0 (\d)/)?.[1], 10) || 1;
+
+  TessModule.FS.writeFile('/input', image);
+
+  const res = api.SetImageFile(exif, angle, upscale);
+  if (res === 1) throw Error('Error attempting to read image.');
+};
+
+/**
+ * Decompresses gzip data using native browser DecompressionStream API
+ * @param {Uint8Array} data - The gzipped data to decompress
+ * @returns {Promise<Uint8Array>} The decompressed data
+ */
+async function gunzip(data) {
+  const ds = new DecompressionStream('gzip');
+  const blob = new Blob([data]);
+  const decompressedStream = blob.stream().pipeThrough(ds);
+  const decompressedBlob = await new Response(decompressedStream).blob();
+  const arrayBuffer = await decompressedBlob.arrayBuffer();
+  return new Uint8Array(arrayBuffer);
+}
+
+const parentPort = typeof process === 'undefined' ? globalThis : (await import('node:worker_threads')).parentPort;
+if (!parentPort) throw new Error('This file must be run in a worker');
+
+let TesseractCore = null;
+
+const getCore = async (oem, vanillaEngine, res) => {
+  if (TesseractCore === null) {
+    const statusText = 'loading tesseract core';
+
+    const simdSupport = await simd();
+    const relaxedSimdSupport = await relaxedSimd();
+    res.progress({ status: statusText, progress: 0 });
+
+    if (vanillaEngine) {
+      if (relaxedSimdSupport) {
+        if ([OEM.DEFAULT, OEM.LSTM_ONLY].includes(oem)) {
+          TesseractCore = (await import('../../tesseract.js-core/vanilla/tesseract-core-relaxedsimd-lstm.js')).default;
+        } else {
+          TesseractCore = (await import('../../tesseract.js-core/vanilla/tesseract-core-relaxedsimd.js')).default;
+        }
+      } else if (simdSupport) {
+        if ([OEM.DEFAULT, OEM.LSTM_ONLY].includes(oem)) {
+          TesseractCore = (await import('../../tesseract.js-core/vanilla/tesseract-core-simd-lstm.js')).default;
+        } else {
+          TesseractCore = (await import('../../tesseract.js-core/vanilla/tesseract-core-simd.js')).default;
+        }
+      } else {
+        throw Error('This runtime is not supported (WASM SIMD required).');
+      }
+    } else if (relaxedSimdSupport) {
+      if ([OEM.DEFAULT, OEM.LSTM_ONLY].includes(oem)) {
+        TesseractCore = (await import('../../tesseract.js-core/tesseract-core-relaxedsimd-lstm.js')).default;
+      } else {
+        TesseractCore = (await import('../../tesseract.js-core/tesseract-core-relaxedsimd.js')).default;
+      }
+    } else if (simdSupport) {
+      if ([OEM.DEFAULT, OEM.LSTM_ONLY].includes(oem)) {
+        TesseractCore = (await import('../../tesseract.js-core/tesseract-core-simd-lstm.js')).default;
+      } else {
+        TesseractCore = (await import('../../tesseract.js-core/tesseract-core-simd.js')).default;
+      }
+    } else {
+      throw Error('This runtime is not supported (WASM SIMD required).');
+    }
+
+    res.progress({ status: statusText, progress: 1 });
+  }
+  return TesseractCore;
+};
+
+/**
+ * deindent
+ *
+ * The generated HOCR is excessively indented, so
+ * we get rid of that indentation
+ *
+ * @name deindent
+ * @function deindent string
+ * @access public
+ */
+const deindent = (html) => {
+  const lines = html.split('\n');
+  if (lines[0].substring(0, 2) === '  ') {
+    for (let i = 0; i < lines.length; i += 1) {
+      if (lines[i].substring(0, 2) === '  ') {
+        lines[i] = lines[i].slice(2);
+      }
+    }
+  }
+  return lines.join('\n');
+};
+
+/**
+ * dump
+ *
+ * @name dump
+ * @function dump recognition result to a JSON object
+ * @access public
+ */
+const dump = (TessModule, api, output, options) => {
+  const enumToString = (value, prefix) => (
+    Object.keys(TessModule)
+      .filter((e) => (e.startsWith(`${prefix}_`) && TessModule[e] === value))
+      .map((e) => e.slice(prefix.length + 1))[0]
+  );
+
+  const getImage = (type) => {
+    api.WriteImage(type, '/image.png');
+    const pngBuffer = TessModule.FS.readFile('/image.png');
+    const pngStr = `data:image/png;base64,${arrayBufferToBase64(pngBuffer.buffer)}`;
+    TessModule.FS.unlink('/image.png');
+    return pngStr;
+  };
+
+  const getPDFInternal = (title, textonly) => {
+    const pdfRenderer = new TessModule.TessPDFRenderer('tesseract-ocr', '/', textonly);
+    pdfRenderer.BeginDocument(title);
+    pdfRenderer.AddImage(api);
+    pdfRenderer.EndDocument();
+    TessModule._free(pdfRenderer);
+
+    return TessModule.FS.readFile('/tesseract-ocr.pdf');
+  };
+
+  return {
+    text: output.text ? api.GetUTF8Text() : null,
+    hocr: output.hocr ? deindent(api.GetHOCRText()) : null,
+    tsv: output.tsv ? api.GetTSVText() : null,
+    box: output.box ? api.GetBoxText() : null,
+    unlv: output.unlv ? api.GetUNLVText() : null,
+    osd: output.osd ? api.GetOsdText() : null,
+    pdf: output.pdf ? getPDFInternal(options.pdfTitle ?? 'Tesseract OCR Result', options.pdfTextOnly ?? false) : null,
+    imageColor: output.imageColor ? getImage(imageType.COLOR) : null,
+    imageGrey: output.imageGrey ? getImage(imageType.GREY) : null,
+    imageBinary: output.imageBinary ? getImage(imageType.BINARY) : null,
+    confidence: !options.skipRecognition ? api.MeanTextConf() : null,
+    blocks: output.blocks && !options.skipRecognition ? JSON.parse(api.GetJSONText()).blocks : null,
+    layoutBlocks: output.layoutBlocks && options.skipRecognition
+      ? JSON.parse(api.GetJSONText()).blocks : null,
+    psm: enumToString(api.GetPageSegMode(), 'PSM'),
+    oem: enumToString(api.oem(), 'OEM'),
+    version: api.Version(),
+    debug: output.debug ? TessModule.FS.readFile('/debugInternal.txt', { encoding: 'utf8', flags: 'a+' }) : null,
+    debugVis: output.debugVis ? TessModule.FS.readFile('/debugVisInternal.txt', { encoding: 'utf8', flags: 'a+' }) : null,
+  };
+};
 
 /*
  * Tesseract Module returned by TesseractCore.
@@ -26,17 +230,16 @@ let TessModule;
  */
 let api = null;
 let latestJob;
-let adapter = {};
 let params = defaultParams;
 let loadLanguageLangsWorker;
 let loadLanguageOptionsWorker;
 let dataFromCache = false;
 
-const load = async ({ workerId, jobId, payload: { options: { lstmOnly, corePath } } }, res) => { // eslint-disable-line max-len
+const load = async ({ workerId, jobId, payload: { options: { lstmOnly, vanillaEngine } } }, res) => { // eslint-disable-line max-len
   const statusText = 'initializing tesseract';
 
   if (!TessModule) {
-    const Core = await adapter.getCore(lstmOnly, corePath, res);
+    const Core = await getCore(lstmOnly, vanillaEngine, res);
 
     res.progress({ workerId, status: statusText, progress: 0 });
 
@@ -63,21 +266,23 @@ const FS = async ({ payload: { method, args } }, res) => {
   res.resolve(TessModule.FS[method](...args));
 };
 
-const loadLanguage = async ({
-  workerId,
-  payload: {
-    langs,
-    options: {
-      langPath,
-      dataPath,
-      cachePath,
-      cacheMethod,
-      gzip = true,
-      lstmOnly,
+const loadLanguage = async (
+  {
+    workerId,
+    payload: {
+      langs,
+      options: {
+        langPath,
+        dataPath,
+        cachePath,
+        cacheMethod,
+        gzip = true,
+        lstmOnly,
+      },
     },
   },
-},
-res) => {
+  res,
+) => {
   // Remember options for later, as cache may be deleted if `initialize` fails
   loadLanguageLangsWorker = langs;
   loadLanguageOptionsWorker = {
@@ -98,7 +303,7 @@ res) => {
     const lang = typeof _lang === 'string' ? _lang : _lang.code;
     const readCache = ['refresh', 'none'].includes(cacheMethod)
       ? () => Promise.resolve()
-      : adapter.readCache;
+      : cache.readCache;
     let data = null;
     let newData = false;
 
@@ -132,16 +337,16 @@ res) => {
         // langPathDownload is a URL, fetch from server
         if (path !== null) {
           const fetchUrl = `${path}/${lang}.traineddata${gzip ? '.gz' : ''}`;
-          const resp = await (env === 'webworker' ? fetch : adapter.fetch)(fetchUrl);
+          const resp = await fetch(fetchUrl);
           if (!resp.ok) {
             throw Error(`Network error while fetching ${fetchUrl}. Response code: ${resp.status}`);
           }
           data = new Uint8Array(await resp.arrayBuffer());
 
         // langPathDownload is a local file, read .traineddata from local filesystem
-        // (adapter.readCache is a generic file read function in Node.js version)
+        // (cache.readCache is a generic file read function in Node.js version)
         } else {
-          data = await adapter.readCache(`${langPathDownload}/${lang}.traineddata${gzip ? '.gz' : ''}`);
+          data = await cache.readCache(`${langPathDownload}/${lang}.traineddata${gzip ? '.gz' : ''}`);
         }
       } else {
         data = _lang.data; // eslint-disable-line
@@ -155,7 +360,7 @@ res) => {
     const isGzip = (data[0] === 31 && data[1] === 139) || (data[1] === 31 && data[0] === 139);
 
     if (isGzip) {
-      data = await adapter.gunzip(data);
+      data = await gunzip(data);
     }
 
     if (TessModule) {
@@ -171,7 +376,7 @@ res) => {
 
     if (newData && ['write', 'refresh', undefined].includes(cacheMethod)) {
       try {
-        await adapter.writeCache(`${cachePath || '.'}/${lang}.traineddata`, data);
+        await cache.writeCache(`${cachePath || '.'}/${lang}.traineddata`, data);
       // eslint-disable-next-line no-empty
       } catch (err) {
       }
@@ -263,7 +468,7 @@ const initialize = async ({
       // [so we do not have permission to make any changes].
       if (['write', 'refresh', undefined].includes(loadLanguageOptionsWorker.cacheMethod)) {
         const langsArr = langs.split('+');
-        const delCachePromise = langsArr.map((lang) => adapter.deleteCache(`${loadLanguageOptionsWorker.cachePath || '.'}/${lang}.traineddata`));
+        const delCachePromise = langsArr.map((lang) => cache.deleteCache(`${loadLanguageOptionsWorker.cachePath || '.'}/${lang}.traineddata`));
         await Promise.all(delCachePromise);
 
         // Check for the case when (1) data was loaded from the cache and
@@ -283,7 +488,7 @@ const initialize = async ({
           await loadLanguage({ workerId, payload: { langs: loadLanguageLangsWorker, options: loadLanguageOptionsWorker } }); // eslint-disable-line max-len
           status = api.Init(null, langs, oem, configFile);
           if (status === -1) {
-            const delCachePromise2 = langsArr.map((lang) => adapter.deleteCache(`${loadLanguageOptionsWorker.cachePath || '.'}/${lang}.traineddata`));
+            const delCachePromise2 = langsArr.map((lang) => cache.deleteCache(`${loadLanguageOptionsWorker.cachePath || '.'}/${lang}.traineddata`));
             await Promise.all(delCachePromise2);
           }
         }
@@ -719,14 +924,16 @@ export const dispatchHandlers = (packet, send) => {
     .catch((err) => res.reject(err.toString()));
 };
 
-/**
- * setAdapter
- *
- * @name setAdapter
- * @function
- * @access public
- * @param {object} adapter - implementation of the worker, different in browser and node environment
- */
-export const setAdapter = (_adapter) => {
-  adapter = _adapter;
-};
+if (typeof process === 'undefined') {
+  globalThis.addEventListener('message', ({ data }) => {
+    dispatchHandlers(data, (obj) => postMessage(obj));
+  });
+} else {
+  parentPort.on('message', (packet) => {
+    dispatchHandlers(packet, (obj) => parentPort.postMessage(obj));
+  });
+}
+
+parentPort.postMessage({
+  data: 'ready', jobId: 'ready', status: 'resolve', action: 'ready',
+});

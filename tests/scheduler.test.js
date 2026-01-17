@@ -1,6 +1,6 @@
 import { IMAGE_PATH, OPTIONS } from './constants.js';
-
-const { createScheduler, createWorker } = Tesseract;
+import { createScheduler, createWorker } from '../src/index.js';
+import { expect } from '../node_modules/chai/chai.js';
 
 let workers = [];
 
@@ -24,7 +24,7 @@ describe('scheduler', () => {
         const rets = await Promise.all(Array(NUM_JOBS).fill(0).map((_, idx) => (
           scheduler.addJob('recognize', `${IMAGE_PATH}/${idx % 2 === 0 ? 'simple' : 'cosmic'}.png`)
         )));
-        expect(rets.length).to.be(NUM_JOBS);
+        expect(rets.length).to.equal(NUM_JOBS);
       }).timeout(60000)
     ));
   });

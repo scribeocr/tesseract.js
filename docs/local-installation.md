@@ -10,14 +10,10 @@ In Node.js environment, the only path you may want to customize is languages/lan
 
 ```javascript
 const worker = await createWorker('eng', 1, {
-  workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@v5.0.0/dist/worker.min.js',
   langPath: 'https://tessdata.projectnaptha.com/4.0.0',
   corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.0.0',
 });
 ```
-
-### workerPath
-A string specifying the location of the `worker.js` file.
 
 ### langPath
 A string specifying the location of the tesseract language files. Language file URLs are calculated according to the formula `langPath + langCode + '.traineddata.gz'`.  If `langPath` is not specified by the user, then the correct language data will be automatically downloaded from the jsDelivr CDN. 

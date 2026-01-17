@@ -1,18 +1,77 @@
-import resolvePaths from './utils/resolvePaths.js';
-import circularize from './utils/circularize.js';
 import createJob from './createJob.js';
 import getId from './utils/getId.js';
 import OEM from './constants/OEM.js';
-import {
-  defaultOptions,
-  spawnWorker,
-  terminateWorker,
-  onMessage,
-  loadImage,
-  send,
-} from './worker/node/index.js';
+import getEnvironment from './utils/getEnvironment.js';
+
+const isBrowser = getEnvironment('type') === 'browser';
 
 let workerCounter = 0;
+
+const send = async (worker, packet) => {
+  worker.postMessage(packet);
+};
+
+const loadImage = async (image) => {
+  let loadImageImp;
+  if (typeof process === 'undefined') {
+    loadImageImp = (await import('./worker/browser/loadImage.js')).default;
+  } else {
+    loadImageImp = (await import('./worker/node/loadImage.js')).default;
+  }
+  return loadImageImp(image);
+};
+
+const resolveURL = isBrowser ? s => (new URL(s, window.location.href)).href : s => s; // eslint-disable-line
+
+const resolvePaths = (options) => {
+  const opts = { ...options };
+  ['corePath', 'langPath'].forEach((key) => {
+    if (options[key]) {
+      opts[key] = resolveURL(opts[key]);
+    }
+  });
+  return opts;
+};
+
+const circularize = (page) => {
+  const blocks = [];
+  const paragraphs = [];
+  const lines = [];
+  const words = [];
+  const symbols = [];
+
+  if (page.blocks) {
+    page.blocks.forEach((block) => {
+      block.paragraphs.forEach((paragraph) => {
+        paragraph.lines.forEach((line) => {
+          line.words.forEach((word) => {
+            word.symbols.forEach((sym) => {
+              symbols.push({
+                ...sym, page, block, paragraph, line, word,
+              });
+            });
+            words.push({
+              ...word, page, block, paragraph, line,
+            });
+          });
+          lines.push({
+            ...line, page, block, paragraph,
+          });
+        });
+        paragraphs.push({
+          ...paragraph, page, block,
+        });
+      });
+      blocks.push({
+        ...block, page,
+      });
+    });
+  }
+
+  return {
+    ...page, blocks, paragraphs, lines, words, symbols,
+  };
+};
 
 export default async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, config = {}) => {
   const id = getId('Worker', workerCounter);
@@ -21,10 +80,15 @@ export default async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, config 
     errorHandler,
     ...options
   } = resolvePaths({
-    ...defaultOptions,
+    logger: () => {},
     ..._options,
   });
+
   const promises = {};
+
+  const ready = new Promise((innerResolve, innerReject) => {
+    promises['ready-ready'] = { resolve: innerResolve, reject: innerReject, func: 'ready' };
+  });
 
   // Current langs, oem, and config file.
   // Used if the user ever re-initializes the worker using `worker.reinitialize`.
@@ -41,8 +105,54 @@ export default async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, config 
   });
   const workerError = (event) => { workerResReject(event.message); };
 
-  let worker = spawnWorker(options);
-  worker.onerror = workerError;
+  let worker;
+  if (typeof process === 'undefined') {
+    worker = new Worker(new URL('./worker-script/index.js', import.meta.url), { type: 'module' });
+  } else {
+    const WorkerNode = (await import('node:worker_threads')).Worker;
+    worker = new WorkerNode(new URL('./worker-script/index.js', import.meta.url));
+  }
+
+  if (typeof process === 'undefined') {
+    // @ts-ignore
+    worker.onerror = workerError;
+  } else {
+    // @ts-ignore
+    worker.on('error', workerError);
+  }
+
+  const messageHandler = async ({
+    jobId, status, action, data,
+  }) => {
+    const promiseId = `${action}-${jobId}`;
+    if (status === 'resolve') {
+      let d = data;
+      if (action === 'recognize') {
+        d = circularize(data);
+      }
+      promises[promiseId].resolve({ jobId, data: d });
+      delete promises[promiseId];
+    } else if (status === 'reject') {
+      promises[promiseId].reject(data);
+      delete promises[promiseId];
+      if (action === 'load') workerResReject(data);
+      if (errorHandler) {
+        errorHandler(data);
+      } else {
+        throw Error(data);
+      }
+    } else if (status === 'progress') {
+      logger({ ...data, userJobId: jobId });
+    }
+  };
+
+  if (typeof process === 'undefined') {
+    // @ts-ignore
+    worker.onmessage = (event) => messageHandler(event.data);
+  } else {
+    // @ts-ignore
+    worker.on('message', messageHandler);
+  }
 
   workerCounter += 1;
 
@@ -88,7 +198,7 @@ export default async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, config 
 
   const loadInternal = (jobId) => (
     startJob(createJob({
-      id: jobId, action: 'load', payload: { options: { lstmOnly: lstmOnlyCore, corePath: options.corePath, logging: options.logging } },
+      id: jobId, action: 'load', payload: { options: { lstmOnly: lstmOnlyCore, vanillaEngine: options.vanillaEngine, logging: options.logging } },
     }))
   );
 
@@ -230,36 +340,11 @@ export default async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, config 
         action: 'terminate',
       }));
       */
-      terminateWorker(worker);
+      await worker.terminate();
       worker = null;
     }
     return Promise.resolve();
   };
-
-  onMessage(worker, ({
-    jobId, status, action, data,
-  }) => {
-    const promiseId = `${action}-${jobId}`;
-    if (status === 'resolve') {
-      let d = data;
-      if (action === 'recognize') {
-        d = circularize(data);
-      }
-      promises[promiseId].resolve({ jobId, data: d });
-      delete promises[promiseId];
-    } else if (status === 'reject') {
-      promises[promiseId].reject(data);
-      delete promises[promiseId];
-      if (action === 'load') workerResReject(data);
-      if (errorHandler) {
-        errorHandler(data);
-      } else {
-        throw Error(data);
-      }
-    } else if (status === 'progress') {
-      logger({ ...data, userJobId: jobId });
-    }
-  });
 
   const resolveObj = {
     id,
@@ -278,6 +363,8 @@ export default async (langs = 'eng', oem = OEM.LSTM_ONLY, _options = {}, config 
     detect,
     terminate,
   };
+
+  await ready;
 
   loadInternal()
     .then(() => loadLanguageInternal(langs))

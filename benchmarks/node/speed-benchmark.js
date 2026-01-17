@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-const path = require('path');
-const { createWorker } = require('../../');
+import { createWorker } from '../../src/index.js';
 
 (async () => {
   const worker = await createWorker();

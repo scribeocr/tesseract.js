@@ -53,7 +53,6 @@ declare namespace Tesseract {
     langPath: string
     cachePath: string
     dataPath: string
-    workerPath: string
     cacheMethod: string
     workerBlobURL: boolean
     gzip: boolean

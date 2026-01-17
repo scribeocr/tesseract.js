@@ -4,6 +4,8 @@ import {
   SIMPLE_TEXT_LEGACY, SIMPLE_TEXT_HALF, CHINESE_TEXT,
   IS_BROWSER, IMAGE_PATH, TIMEOUT, OPTIONS,
 } from './constants.js';
+import Tesseract from '../src/index.js';
+import { expect } from '../node_modules/chai/chai.js';
 
 describe('recognize()', () => {
   let worker;
@@ -19,7 +21,7 @@ describe('recognize()', () => {
       it(`support ${format} format`, async () => {
         await worker.reinitialize('eng');
         const { data: { text } } = await worker.recognize(`${IMAGE_PATH}/simple.${format}`);
-        expect(text).to.be(SIMPLE_TEXT);
+        expect(text).to.equal(SIMPLE_TEXT);
       }).timeout(TIMEOUT)
     ));
   });
@@ -32,7 +34,7 @@ describe('recognize()', () => {
       it(`recongize ${format} in base64`, async () => {
         await worker.reinitialize('eng');
         const { data: { text } } = await worker.recognize(image);
-        expect(text).to.be(ans);
+        expect(text).to.equal(ans);
       }).timeout(TIMEOUT)
     ));
   });
@@ -45,7 +47,7 @@ describe('recognize()', () => {
       it(`recongize ${format} in base64`, async () => {
         const { data: { text } } = await workerLegacy.recognize(image);
         console.log(text);
-        expect(text).to.be(ans);
+        expect(text).to.equal(ans);
       }).timeout(TIMEOUT)
     ));
   });
@@ -59,7 +61,7 @@ describe('recognize()', () => {
       it(`recongize ${desc} image`, async () => {
         await worker.reinitialize('eng');
         const { data: { text } } = await worker.recognize(`${IMAGE_PATH}/${name}`);
-        expect(text).to.be(ans);
+        expect(text).to.equal(ans);
       }).timeout(TIMEOUT)
     ));
   });
@@ -71,7 +73,7 @@ describe('recognize()', () => {
       it(`recongize ${lang}`, async () => {
         await worker.reinitialize(lang);
         const { data: { text } } = await worker.recognize(`${IMAGE_PATH}/${name}`);
-        expect(text).to.be(ans);
+        expect(text).to.equal(ans);
       }).timeout(TIMEOUT)
     ));
   });
@@ -85,7 +87,7 @@ describe('recognize()', () => {
       it(`recongize ${desc} image`, async () => {
         await worker.reinitialize('eng');
         const { data: { text } } = await worker.recognize(`${IMAGE_PATH}/${name}`);
-        expect(text).to.be(ans);
+        expect(text).to.equal(ans);
       }).timeout(TIMEOUT)
     ));
   });
@@ -108,7 +110,7 @@ describe('recognize()', () => {
             },
           },
         );
-        expect(text).to.be(ans);
+        expect(text).to.equal(ans);
       }).timeout(TIMEOUT)
     ));
   });
@@ -120,7 +122,7 @@ describe('recognize()', () => {
         preserve_interword_spaces: '1',
       });
       const { data: { text } } = await worker.recognize(`${IMAGE_PATH}/bill.png`);
-      expect(text).to.be(BILL_SPACED_TEXT);
+      expect(text).to.equal(BILL_SPACED_TEXT);
     }).timeout(TIMEOUT);
 
     it('support tessedit_char_whitelist', async () => {
@@ -129,7 +131,7 @@ describe('recognize()', () => {
         tessedit_char_whitelist: 'Tess',
       });
       const { data: { text } } = await worker.recognize(`${IMAGE_PATH}/simple.png`);
-      expect(text).to.be(SIMPLE_WHITELIST_TEXT);
+      expect(text).to.equal(SIMPLE_WHITELIST_TEXT);
     }).timeout(TIMEOUT);
   });
 
@@ -144,7 +146,7 @@ describe('recognize()', () => {
             tessedit_pageseg_mode: mode,
           });
           const { data } = await workerLegacy.recognize(`${IMAGE_PATH}/simple.png`);
-          expect(Object.keys(data).length).not.to.be(0);
+          expect(Object.keys(data).length).not.to.equal(0);
         }).timeout(TIMEOUT)
       ));
   });
@@ -161,7 +163,7 @@ describe('recognize()', () => {
             tessedit_pageseg_mode: mode,
           });
           const { data } = await worker.recognize(`${IMAGE_PATH}/simple.png`);
-          expect(Object.keys(data).length).not.to.be(0);
+          expect(Object.keys(data).length).not.to.equal(0);
         }).timeout(TIMEOUT)
       ));
   });
@@ -169,10 +171,11 @@ describe('recognize()', () => {
   (IS_BROWSER ? describe.skip : describe)('should recognize image in Buffer format (Node.js only)', () => {
     FORMATS.forEach((format) => (
       it(`support ${format} format`, async () => {
+        const fs = await import('fs');
         const buf = fs.readFileSync(`${IMAGE_PATH}/simple.${format}`);
         await worker.reinitialize('eng');
         const { data: { text } } = await worker.recognize(buf);
-        expect(text).to.be(SIMPLE_TEXT);
+        expect(text).to.equal(SIMPLE_TEXT);
       }).timeout(TIMEOUT)
     ));
   });
@@ -184,7 +187,7 @@ describe('recognize()', () => {
         imageDOM.setAttribute('src', `${IMAGE_PATH}/simple.${format}`);
         await worker.reinitialize('eng');
         const { data: { text } } = await worker.recognize(imageDOM);
-        expect(text).to.be(SIMPLE_TEXT);
+        expect(text).to.equal(SIMPLE_TEXT);
       }).timeout(TIMEOUT)
     ));
   });
@@ -196,7 +199,7 @@ describe('recognize()', () => {
         videoDOM.setAttribute('poster', `${IMAGE_PATH}/simple.${format}`);
         await worker.reinitialize('eng');
         const { data: { text } } = await worker.recognize(videoDOM);
-        expect(text).to.be(SIMPLE_TEXT);
+        expect(text).to.equal(SIMPLE_TEXT);
       }).timeout(TIMEOUT)
     ));
   });
@@ -228,7 +231,7 @@ describe('recognize()', () => {
       it(`support ${format} format`, async () => {
         await worker.reinitialize('eng');
         const { data: { text } } = await worker.recognize(canvasDOM);
-        expect(text).to.be(SIMPLE_TEXT);
+        expect(text).to.equal(SIMPLE_TEXT);
       }).timeout(TIMEOUT)
     ));
   });
@@ -260,7 +263,7 @@ describe('recognize()', () => {
       it(`support ${format} format`, async () => {
         await worker.reinitialize('eng');
         const { data: { text } } = await worker.recognize(offscreenCanvas);
-        expect(text).to.be(SIMPLE_TEXT);
+        expect(text).to.equal(SIMPLE_TEXT);
       }).timeout(TIMEOUT)
     ));
   });
@@ -269,23 +272,23 @@ describe('recognize()', () => {
     it('recongize large image', async () => {
       await worker.reinitialize('eng');
       const { data: { blocks } } = await worker.recognize(`${IMAGE_PATH}/testocr.png`, {}, { blocks: true });
-      expect(blocks[0].paragraphs[0].lines[0].words[0].symbols[0].text).to.be('T');
-      expect(blocks[0].paragraphs[0].lines[0].words[0].text).to.be('This');
-      expect(blocks[0].paragraphs[0].lines[0].text).to.be('This is a lot of 12 point text to test the\n');
+      expect(blocks[0].paragraphs[0].lines[0].words[0].symbols[0].text).to.equal('T');
+      expect(blocks[0].paragraphs[0].lines[0].words[0].text).to.equal('This');
+      expect(blocks[0].paragraphs[0].lines[0].text).to.equal('This is a lot of 12 point text to test the\n');
     }).timeout(TIMEOUT);
 
     it('recongize image with special characters', async () => {
       await worker.reinitialize('eng');
       const { data: { blocks } } = await worker.recognize(`${IMAGE_PATH}/escape_chars.png`, {}, { blocks: true });
-      expect(blocks[0].paragraphs[0].lines[0].text).to.be('"Double Quotes"\n');
-      expect(blocks[0].paragraphs[0].lines[1].text).to.be('Back \\ Slash\n');
+      expect(blocks[0].paragraphs[0].lines[0].text).to.equal('"Double Quotes"\n');
+      expect(blocks[0].paragraphs[0].lines[1].text).to.equal('Back \\ Slash\n');
     }).timeout(TIMEOUT);
 
     it('recongize image with multiple choices', async () => {
       await workerLegacy.reinitialize('eng');
       const { data: { blocks } } = await workerLegacy.recognize(`${IMAGE_PATH}/bill.png`, {}, { blocks: true });
-      expect(blocks[0].paragraphs[1].lines[0].words[3].choices.length).to.be(3);
-      expect(blocks[0].paragraphs[1].lines[0].words[3].choices[1].text).to.be('100,000.0ll');
+      expect(blocks[0].paragraphs[1].lines[0].words[3].choices.length).to.equal(3);
+      expect(blocks[0].paragraphs[1].lines[0].words[3].choices[1].text).to.equal('100,000.0ll');
     }).timeout(TIMEOUT);
 
     // it('recongize image with multiple blocks', async () => {
@@ -297,15 +300,15 @@ describe('recognize()', () => {
     //   });
     //   const { data: { blocks } } = await worker.recognize(`${IMAGE_PATH}/bill.png`,
     // {}, { blocks: true });
-    //   expect(blocks.length).to.be(4);
+    //   expect(blocks.length).to.equal(4);
     // }).timeout(TIMEOUT);
 
     it('recongize chinese image', async () => {
       await worker.reinitialize('chi_tra');
       const { data: { blocks } } = await worker.recognize(`${IMAGE_PATH}/chinese.png`, {}, { blocks: true });
-      expect(blocks[0].paragraphs[0].lines[0].words[0].symbols[0].text).to.be('繁');
-      expect(blocks[0].paragraphs[0].lines[0].words[0].text).to.be('繁體');
-      expect(blocks[0].paragraphs[0].lines[0].text).to.be('繁體 中 文 測試\n');
+      expect(blocks[0].paragraphs[0].lines[0].words[0].symbols[0].text).to.equal('繁');
+      expect(blocks[0].paragraphs[0].lines[0].words[0].text).to.equal('繁體');
+      expect(blocks[0].paragraphs[0].lines[0].text).to.equal('繁體 中 文 測試\n');
     }).timeout(TIMEOUT);
 
     it('should report RowAttributes', async () => {
@@ -330,10 +333,10 @@ describe('recognize()', () => {
   //     await worker.reinitialize('eng');
   //     const { data: { layoutBlocks } } = await worker.recognize(`${IMAGE_PATH}/testocr.png`,
   // {}, { text: false, layoutBlocks: true });
-  //     expect(layoutBlocks[0].bbox.x0).to.be(36);
-  //     expect(layoutBlocks[0].bbox.y0).to.be(92);
-  //     expect(layoutBlocks[0].bbox.x1).to.be(618);
-  //     expect(layoutBlocks[0].bbox.y1).to.be(361);
+  //     expect(layoutBlocks[0].bbox.x0).to.equal(36);
+  //     expect(layoutBlocks[0].bbox.y0).to.equal(92);
+  //     expect(layoutBlocks[0].bbox.x1).to.equal(618);
+  //     expect(layoutBlocks[0].bbox.y1).to.equal(361);
   //   }).timeout(TIMEOUT);
   // });
 });
