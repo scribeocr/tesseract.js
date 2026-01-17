@@ -1,4 +1,4 @@
-export default function (config) {
+module.exports = function (config) {
   config.set({
     frameworks: ['mocha'],
     files: [
@@ -31,4 +31,4 @@ export default function (config) {
     singleRun: true,
     concurrency: 1,
   });
-}
+};

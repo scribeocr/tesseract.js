@@ -10,7 +10,7 @@
   "scripts": {
     "test": "npm-run-all -p test:all",
     "test:all": "npm-run-all test:browser test:node:all",
-    "test:browser": "karma start karma.conf.js",
+    "test:browser": "karma start karma.conf.cjs",
     "test:node": "mocha --exit --bail ./tests/*.test.js",
     "test:node:all": "npm run test:node",
     "lint": "eslint src",
