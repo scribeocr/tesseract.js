@@ -9,9 +9,7 @@
  */
 import { TessScheduler } from './TessScheduler.js';
 import { TessWorker } from './TessWorker.js';
-import languages from './constants/languages.js';
-import OEM from './constants/OEM.js';
-import PSM from './constants/PSM.js';
+import { languages, OEM, PSM } from './constants.js';
 
 export {
   languages,

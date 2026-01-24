@@ -1,10 +1,8 @@
 import getEnvironment from '../utils/getEnvironment.js';
-import PSM from '../constants/PSM.js';
 import isURL from '../utils/isURL.js';
 import { simd, relaxedSimd } from '../utils/wasmFeatureDetect.js';
-import OEM from '../constants/OEM.js';
 import arrayBufferToBase64 from './utils/arrayBufferToBase64.js';
-import imageType from '../constants/imageType.js';
+import { OEM, PSM, imageType } from '../constants.js';
 
 const env = getEnvironment('type');
 

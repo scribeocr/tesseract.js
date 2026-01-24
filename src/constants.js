@@ -1,3 +1,9 @@
+export const imageType = {
+  COLOR: 0,
+  GREY: 1,
+  BINARY: 2,
+};
+
 /*
  * languages with existing tesseract traineddata
  * https://tesseract-ocr.github.io/tessdoc/Data-Files#data-files-for-version-400-november-29-2016
@@ -112,7 +118,7 @@
 /**
   * @type {Languages}
   */
-export default {
+export const languages = {
   AFR: 'afr',
   AMH: 'amh',
   ARA: 'ara',
@@ -215,4 +221,36 @@ export default {
   UZB_CYRL: 'uzb_cyrl',
   VIE: 'vie',
   YID: 'yid',
+};
+
+/**
+ * OEM = OCR Engine Mode, and there are 4 possible modes.
+ *
+ * By default tesseract.js uses LSTM_ONLY mode.
+ */
+export const OEM = {
+  TESSERACT_ONLY: 0,
+  LSTM_ONLY: 1,
+  TESSERACT_LSTM_COMBINED: 2,
+  DEFAULT: 3,
+};
+
+/**
+ * PSM = Page Segmentation Mode
+ */
+export const PSM = {
+  OSD_ONLY: '0',
+  AUTO_OSD: '1',
+  AUTO_ONLY: '2',
+  AUTO: '3',
+  SINGLE_COLUMN: '4',
+  SINGLE_BLOCK_VERT_TEXT: '5',
+  SINGLE_BLOCK: '6',
+  SINGLE_LINE: '7',
+  SINGLE_WORD: '8',
+  CIRCLE_WORD: '9',
+  SINGLE_CHAR: '10',
+  SPARSE_TEXT: '11',
+  SPARSE_TEXT_OSD: '12',
+  RAW_LINE: '13',
 };

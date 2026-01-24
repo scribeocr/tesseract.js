@@ -1,7 +1,7 @@
 import createJob from './createJob.js';
 import getId from './utils/getId.js';
-import OEM from './constants/OEM.js';
 import getEnvironment from './utils/getEnvironment.js';
+import { OEM } from './constants.js';
 
 const isBrowser = getEnvironment('type') === 'browser';
 
