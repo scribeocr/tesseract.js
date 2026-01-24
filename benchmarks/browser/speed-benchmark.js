@@ -1,4 +1,4 @@
-import * as Tesseract from "../../src/index.js";
+import * as Tesseract from '../../src/index.js';
 
 // This example provides a standardized performance benchmark.
 // It does not accept user input.
@@ -6,7 +6,7 @@ import * as Tesseract from "../../src/index.js";
 const { createWorker } = Tesseract;
 
 (async () => {
-  const worker = await createWorker("eng", 1, {
+  const worker = await createWorker('eng', 1, {
     corePath: '../../tesseract.js-core',
   });
 
@@ -16,35 +16,32 @@ const { createWorker } = Tesseract;
   const debugMemory = true;
   if (debugMemory && crossOriginIsolated) {
     const memObj = await performance.measureUserAgentSpecificMemory();
-    const memMb = memObj.breakdown.map((x) => { if (x.attribution?.[0]?.scope == "DedicatedWorkerGlobalScope") return x.bytes }).reduce((a, b) => (a || 0) + (b || 0), 0) / 1e6;
+    const memMb = memObj.breakdown.map((x) => { if (x.attribution?.[0]?.scope == 'DedicatedWorkerGlobalScope') return x.bytes; }).reduce((a, b) => (a || 0) + (b || 0), 0) / 1e6;
 
     console.log(`Worker memory utilization after initialization: ${memMb} MB`);
-
   } else {
-    console.log("Unable to run `performance.measureUserAgentSpecificMemory`: not crossOriginIsolated.")
+    console.log('Unable to run `performance.measureUserAgentSpecificMemory`: not crossOriginIsolated.');
   }
 
-  const fileArr = ["../data/meditations.jpg", "../data/tyger.jpg", "../data/testocr.png"];
+  const fileArr = ['../data/meditations.jpg', '../data/tyger.jpg', '../data/testocr.png'];
   let timeTotal = 0;
-  for (let file of fileArr) {
-    let time1 = Date.now();
+  for (const file of fileArr) {
+    const time1 = Date.now();
     for (let i = 0; i < 10; i++) {
       await worker.recognize(file);
     }
-    let time2 = Date.now();
+    const time2 = Date.now();
     const timeDif = (time2 - time1) / 1e3;
     timeTotal += timeDif;
-    document.getElementById('message').innerHTML += "\n" + file + " [x10] runtime: " + timeDif + "s";
+    document.getElementById('message').innerHTML += `\n${file} [x10] runtime: ${timeDif}s`;
   }
 
   if (debugMemory && crossOriginIsolated) {
     const memObj = await performance.measureUserAgentSpecificMemory();
-    const memMb = memObj.breakdown.map((x) => { if (x.attribution?.[0]?.scope == "DedicatedWorkerGlobalScope") return x.bytes }).reduce((a, b) => (a || 0) + (b || 0), 0) / 1e6;
+    const memMb = memObj.breakdown.map((x) => { if (x.attribution?.[0]?.scope == 'DedicatedWorkerGlobalScope') return x.bytes; }).reduce((a, b) => (a || 0) + (b || 0), 0) / 1e6;
 
     console.log(`Worker memory utilization after recognition: ${memMb} MB`);
-
   }
 
-  document.getElementById('message').innerHTML += "\nTotal runtime: " + timeTotal + "s";
-
+  document.getElementById('message').innerHTML += `\nTotal runtime: ${timeTotal}s`;
 })();

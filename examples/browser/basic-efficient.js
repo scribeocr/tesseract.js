@@ -1,9 +1,9 @@
-import { createWorker } from "../../src/index.js";
+import { createWorker } from '../../src/index.js';
 
 // A worker is created once and used every time a user uploads a new file.
-const worker = await createWorker("eng", 1, {
+const worker = await createWorker('eng', 1, {
   corePath: '../../tesseract.js-core',
-  logger: function (m) { console.log(m); }
+  logger(m) { console.log(m); },
 });
 
 const recognize = async function (evt) {
@@ -13,7 +13,7 @@ const recognize = async function (evt) {
     const ret = await worker.recognize(files[i]);
     console.log(ret.data.text);
   }
-}
+};
 
 const elm = document.getElementById('uploader');
 elm.addEventListener('change', recognize);

@@ -9,12 +9,12 @@ const scheduler = Tesseract.createScheduler();
 
 // Creates worker and adds to scheduler
 const workerGen = async () => {
-  const worker = await Tesseract.createWorker("eng", 1, {
+  const worker = await Tesseract.createWorker('eng', 1, {
     corePath: '../../tesseract.js-core',
-    logger: function (m) { console.log(m); }
+    logger(m) { console.log(m); },
   });
   scheduler.addWorker(worker);
-}
+};
 
 const workerN = 4;
 (async () => {
@@ -28,9 +28,9 @@ const recognize = async function (evt) {
   const files = evt.target.files;
 
   for (let i = 0; i < files.length; i++) {
-    scheduler.addJob('recognize', files[i]).then((x) => console.log(x.data.text))
+    scheduler.addJob('recognize', files[i]).then((x) => console.log(x.data.text));
   }
-}
+};
 
 const elm = document.getElementById('uploader');
 elm.addEventListener('change', recognize);
