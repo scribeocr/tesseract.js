@@ -3,10 +3,10 @@ import * as Tesseract from '../../src/index.js';
 // This example provides a standardized performance benchmark.
 // It does not accept user input.
 
-const { createWorker } = Tesseract;
+const { TessWorker } = Tesseract;
 
 (async () => {
-  const worker = await createWorker('eng', 1, {
+  const worker = await TessWorker.create('eng', 1, {
     corePath: '../../tesseract.js-core',
   });
 

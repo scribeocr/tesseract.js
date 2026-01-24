@@ -7,8 +7,8 @@
  * @author Guillermo Webster <gui@mit.edu>
  * @author Jerome Wu <jeromewus@gmail.com>
  */
-import createScheduler from './createScheduler.js';
-import createWorker from './createWorker.js';
+import { TessScheduler } from './TessScheduler.js';
+import { TessWorker } from './TessWorker.js';
 import languages from './constants/languages.js';
 import OEM from './constants/OEM.js';
 import PSM from './constants/PSM.js';
@@ -17,14 +17,14 @@ export {
   languages,
   OEM,
   PSM,
-  createScheduler,
-  createWorker,
+  TessScheduler,
+  TessWorker,
 };
 
 export default {
   languages,
   OEM,
   PSM,
-  createScheduler,
-  createWorker,
+  TessScheduler,
+  TessWorker,
 };

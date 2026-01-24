@@ -6,7 +6,7 @@ describe('detect()', () => {
   let worker;
   before(async function cb() {
     this.timeout(0);
-    worker = await Tesseract.createWorker('osd', 0, OPTIONS);
+    worker = await Tesseract.TessWorker.create('osd', 0, OPTIONS);
   });
 
   it('should detect OSD', async () => {

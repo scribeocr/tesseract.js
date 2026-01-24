@@ -1,7 +1,7 @@
 import * as Tesseract from '../../src/index.js';
 
-const { createWorker } = Tesseract;
-const worker = await createWorker('eng', 1, {
+const { TessWorker } = Tesseract;
+const worker = await TessWorker.create('eng', 1, {
   corePath: '../../tesseract.js-core',
   logger: (m) => console.log(m),
 });

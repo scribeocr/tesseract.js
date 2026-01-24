@@ -5,11 +5,11 @@ import * as Tesseract from '../../src/index.js';
 // While performance is similar for a single file, this parallel processing results in significantly
 // faster speeds when used with multiple files.
 
-const scheduler = Tesseract.createScheduler();
+const scheduler = new Tesseract.TessScheduler();
 
 // Creates worker and adds to scheduler
 const workerGen = async () => {
-  const worker = await Tesseract.createWorker('eng', 1, {
+  const worker = await Tesseract.TessWorker.create('eng', 1, {
     corePath: '../../tesseract.js-core',
     logger(m) { console.log(m); },
   });

@@ -1,6 +1,6 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createWorker, createScheduler } from '../../src/index.js';
+import { TessWorker, TessScheduler } from '../../src/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,11 +14,11 @@ const [,, imagePath] = process.argv;
 const image = path.resolve(__dirname, (imagePath || '../../tests/assets/images/cosmic.png'));
 const imageArr = [image, image, image, image];
 
-const scheduler = createScheduler();
+const scheduler = new TessScheduler();
 
 // Creates worker and adds to scheduler
 const workerGen = async () => {
-  const worker = await createWorker('eng', 1, { cachePath: '.' });
+  const worker = await TessWorker.create('eng', 1, { cachePath: '.' });
   scheduler.addWorker(worker);
 };
 

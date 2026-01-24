@@ -1,30 +1,4 @@
-declare namespace Tesseract {
-  function createScheduler(): Scheduler
-  function createWorker(langs?: string | Lang[], oem?: OEM, options?: Partial<WorkerOptions>, config?: string | Partial<InitOptions>): Promise<Worker>
-
-  interface Scheduler {
-    addWorker(worker: Worker): string
-    addJob(action: 'recognize', ...args: Parameters<Worker['recognize']>): Promise<RecognizeResult>
-    addJob(action: 'detect', ...args: Parameters<Worker['detect']>): Promise<DetectResult>
-    terminate(): Promise<any>
-    getQueueLen(): number
-    getNumWorkers(): number
-  }
-
-  export interface Worker {
-    load(jobId?: string): Promise<ConfigResult>
-    writeText(path: string, text: string, jobId?: string): Promise<ConfigResult>
-    readText(path: string, jobId?: string): Promise<ConfigResult>
-    removeText(path: string, jobId?: string): Promise<ConfigResult>
-    FS(method: string, args: any[], jobId?: string): Promise<ConfigResult>
-    reinitialize(langs?: string | Lang[], oem?: OEM, config?: string | Partial<InitOptions>, jobId?: string): Promise<ConfigResult>
-    setParameters(params: Partial<WorkerParams>, jobId?: string): Promise<ConfigResult>
-    getImage(type: imageType): string
-    recognize<T extends Partial<OutputFormats> = {}>(image: ImageLike, options?: Partial<RecognizeOptions>, output?: T, jobId?: string): Promise<RecognizeResult<T>>;
-    recognize2<T extends Partial<OutputFormats> = {}>(image: ImageLike, options?: Partial<RecognizeOptions>, output?: T, jobId?: string): Promise<[Promise<RecognizeResult<T>>, Promise<RecognizeResult<T>>]>;
-    detect(image: ImageLike, jobId?: string): Promise<DetectResult>
-    terminate(jobId?: string): Promise<ConfigResult>
-  }
+declare global {
 
   interface Lang {
     code: string;
@@ -278,5 +252,4 @@ declare namespace Tesseract {
   }
 }
 
-export = Tesseract;
-export as namespace Tesseract;
+export { };

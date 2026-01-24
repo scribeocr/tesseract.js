@@ -2,7 +2,7 @@
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { createWorker } from '../../src/index.js';
+import { TessWorker } from '../../src/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,7 +24,7 @@ const convertImage = (imageSrc) => {
 };
 
 (async () => {
-  const worker = await createWorker();
+  const worker = await TessWorker.create();
   const { data: { imageColor, imageGrey, imageBinary } } = await worker.recognize(image, { rotateAuto: true }, { imageColor: true, imageGrey: true, imageBinary: true });
 
   console.log('Saving intermediate images: imageColor.png, imageGrey.png, imageBinary.png');

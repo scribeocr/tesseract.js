@@ -1,7 +1,7 @@
-import { createWorker } from '../../src/index.js';
+import { TessWorker } from '../../src/index.js';
 
 // A worker is created once and used every time a user uploads a new file.
-const worker = await createWorker('eng', 1, {
+const worker = await TessWorker.create('eng', 1, {
   corePath: '../../tesseract.js-core',
   logger(m) { console.log(m); },
 });

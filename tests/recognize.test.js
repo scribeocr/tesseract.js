@@ -12,8 +12,8 @@ describe('recognize()', () => {
   let workerLegacy;
   before(async function cb() {
     this.timeout(0);
-    worker = await Tesseract.createWorker('eng', 1, OPTIONS);
-    workerLegacy = await Tesseract.createWorker('eng', 0, OPTIONS);
+    worker = await Tesseract.TessWorker.create('eng', 1, OPTIONS);
+    workerLegacy = await Tesseract.TessWorker.create('eng', 0, OPTIONS);
   });
 
   describe('should read bmp, jpg, png and pbm format images', () => {

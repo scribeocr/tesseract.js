@@ -6,7 +6,7 @@ describe('FS', () => {
   let worker;
   before(async function cb() {
     this.timeout(0);
-    worker = await Tesseract.createWorker('eng', 1, OPTIONS);
+    worker = await Tesseract.TessWorker.create('eng', 1, OPTIONS);
   });
 
   it('should write and read text from FS (using FS only)', async () => {

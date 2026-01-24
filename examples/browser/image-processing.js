@@ -2,7 +2,7 @@ import * as Tesseract from '../../src/index.js';
 
 const recognize = async ({ target: { files } }) => {
   document.getElementById('imgInput').src = URL.createObjectURL(files[0]);
-  const worker = await Tesseract.createWorker('eng', 1, {
+  const worker = await Tesseract.TessWorker.create('eng', 1, {
     corePath: '../../tesseract.js-core',
   });
   const ret = await worker.recognize(files[0], { rotateAuto: true }, { imageColor: true, imageGrey: true, imageBinary: true });

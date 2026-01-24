@@ -3,7 +3,7 @@ import * as Tesseract from '../../src/index.js';
 const recognize = async () => {
   const element = document.getElementById('imgRow');
 
-  const worker = await Tesseract.createWorker('eng', 0, {
+  const worker = await Tesseract.TessWorker.create('eng', 0, {
     corePath: '../../tesseract.js-core',
   });
 

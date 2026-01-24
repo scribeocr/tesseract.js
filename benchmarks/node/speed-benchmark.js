@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import { createWorker } from '../../src/index.js';
+import { TessWorker } from '../../src/index.js';
 
 (async () => {
-  const worker = await createWorker();
+  const worker = await TessWorker.create();
   const fileArr = ['../data/meditations.jpg', '../data/tyger.jpg', '../data/testocr.png'];
   let timeTotal = 0;
   for (const file of fileArr) {
