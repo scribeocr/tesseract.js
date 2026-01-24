@@ -352,7 +352,7 @@ export class TessWorker {
    * @returns {Promise<RecognizeResult<T>>}
    */
   async recognize(image, opts = {}, output = {
-    blocks: true, text: true, hocr: true, tsv: true,
+    blocks: true, text: true,
   }, jobId) {
     return this.#startJob(createJob({
       id: jobId,
@@ -372,7 +372,7 @@ export class TessWorker {
    * @returns {Promise<[Promise<RecognizeResult<T>>, Promise<RecognizeResult<T>>]>}
    */
   async recognize2(image, opts = {}, output = {
-    blocks: true, text: true, hocr: true, tsv: true,
+    blocks: true, text: true,
   }, jobId) {
     return this.#startJob2(createJob({
       id: jobId,

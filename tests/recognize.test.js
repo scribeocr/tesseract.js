@@ -8,7 +8,9 @@ import Tesseract from '../src/index.js';
 import { expect } from '../node_modules/chai/chai.js';
 
 describe('recognize()', () => {
+  /** @type {import('../src/TessWorker.js').TessWorker} */
   let worker;
+  /** @type {import('../src/TessWorker.js').TessWorker} */
   let workerLegacy;
   before(async function cb() {
     this.timeout(0);
@@ -298,8 +300,11 @@ describe('recognize()', () => {
     //   await worker.setParameters({
     //     tessedit_pageseg_mode: Tesseract.PSM.AUTO,
     //   });
-    //   const { data: { blocks } } = await worker.recognize(`${IMAGE_PATH}/bill.png`,
-    // {}, { blocks: true });
+    //   const { data: { blocks } } = await worker.recognize(
+    //     `${IMAGE_PATH}/bill.png`,
+    //     {},
+    //     { blocks: true },
+    //   );
     //   expect(blocks.length).to.equal(4);
     // }).timeout(TIMEOUT);
 
@@ -331,8 +336,11 @@ describe('recognize()', () => {
   // describe('should support layout blocks (json) output', () => {
   //   it('recongize large image', async () => {
   //     await worker.reinitialize('eng');
-  //     const { data: { layoutBlocks } } = await worker.recognize(`${IMAGE_PATH}/testocr.png`,
-  // {}, { text: false, layoutBlocks: true });
+  //     const { data: { layoutBlocks } } = await worker.recognize(
+  //       `${IMAGE_PATH}/testocr.png`,
+  //       {},
+  //       { text: false, layoutBlocks: true },
+  //     );
   //     expect(layoutBlocks[0].bbox.x0).to.equal(36);
   //     expect(layoutBlocks[0].bbox.y0).to.equal(92);
   //     expect(layoutBlocks[0].bbox.x1).to.equal(618);

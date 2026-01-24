@@ -254,3 +254,24 @@ export const PSM = {
   SPARSE_TEXT_OSD: '12',
   RAW_LINE: '13',
 };
+
+export const defaultParams = {
+  tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
+  tessedit_char_whitelist: '',
+};
+
+export const defaultOutput = {
+  text: true,
+  blocks: false,
+  layoutBlocks: false,
+  hocr: false,
+  tsv: false,
+  box: false,
+  unlv: false,
+  osd: false,
+  pdf: false,
+  imageColor: false,
+  imageGrey: false,
+  imageBinary: false,
+  debug: false,
+};

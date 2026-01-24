@@ -2,35 +2,11 @@ import getEnvironment from '../utils/getEnvironment.js';
 import isURL from '../utils/isURL.js';
 import { simd, relaxedSimd } from '../utils/wasmFeatureDetect.js';
 import arrayBufferToBase64 from './utils/arrayBufferToBase64.js';
-import { OEM, PSM, imageType } from '../constants.js';
+import {
+  OEM, PSM, imageType, defaultParams, defaultOutput,
+} from '../constants.js';
 
 const env = getEnvironment('type');
-
-const defaultParams = {
-  tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
-  tessedit_char_whitelist: '',
-  tessjs_create_hocr: '1',
-  tessjs_create_tsv: '1',
-  tessjs_create_box: '0',
-  tessjs_create_unlv: '0',
-  tessjs_create_osd: '0',
-};
-
-const defaultOutput = {
-  text: true,
-  blocks: true,
-  layoutBlocks: false,
-  hocr: true,
-  tsv: true,
-  box: false,
-  unlv: false,
-  osd: false,
-  pdf: false,
-  imageColor: false,
-  imageGrey: false,
-  imageBinary: false,
-  debug: false,
-};
 
 const cache = {
   readCache: async (...args) => {
