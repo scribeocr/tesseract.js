@@ -231,11 +231,13 @@ export class TessWorker {
    * @returns {[Promise<RecognizeResult>, Promise<RecognizeResult>]}
    */
   #startJob2({ id: jobId, action, payload }) {
+    /** @type {Promise<RecognizeResult>} */
     const promiseB = new Promise((resolve, reject) => {
       const promiseId = `${action}-${jobId}b`;
       this.#promises[promiseId] = { resolve, reject };
     });
 
+    /** @type {Promise<RecognizeResult>} */
     const promiseA = new Promise((resolve, reject) => {
       const promiseId = `${action}-${jobId}`;
       this.#promises[promiseId] = { resolve, reject };
@@ -247,7 +249,7 @@ export class TessWorker {
       });
     });
 
-    return /** @type {[Promise<RecognizeResult>, Promise<RecognizeResult>]} */ ([promiseA, promiseB]);
+    return ([promiseA, promiseB]);
   }
 
   #loadInternal(jobId) {
