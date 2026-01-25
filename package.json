@@ -4,7 +4,6 @@
   "description": "Fork of tesseract.js used for scribe.js. Pure Javascript Multilingual OCR",
   "type": "module",
   "main": "src/index.js",
-  "types": "src/index.d.ts",
   "unpkg": "dist/tesseract.min.js",
   "jsdelivr": "dist/tesseract.min.js",
   "scripts": {

@@ -1,7 +1,13 @@
 import createJob from './createJob.js';
 import getId from './utils/getId.js';
 import getEnvironment from './utils/getEnvironment.js';
-import { OEM } from './constants.js';
+import { OEM, PSM } from './constants.js';
+
+/** @typedef {import('./types.js').ImageLike} ImageLike */
+/** @typedef {import('./types.js').RecognizeOptions} RecognizeOptions */
+/** @typedef {import('./types.js').OutputFormats} OutputFormats */
+/** @typedef {import('./types.js').RecognizeResult} RecognizeResult */
+/** @typedef {import('./types.js').Page} Page */
 
 const isBrowser = getEnvironment('type') === 'browser';
 
@@ -69,6 +75,10 @@ const loadImage = async (image) => {
 
 export class TessWorker {
   static #workerCounter = 0;
+
+  static PSM = PSM;
+
+  static OEM = OEM;
 
   #id;
 
@@ -217,6 +227,9 @@ export class TessWorker {
     });
   }
 
+  /**
+   * @returns {[Promise<RecognizeResult>, Promise<RecognizeResult>]}
+   */
   #startJob2({ id: jobId, action, payload }) {
     const promiseB = new Promise((resolve, reject) => {
       const promiseId = `${action}-${jobId}b`;
@@ -234,7 +247,7 @@ export class TessWorker {
       });
     });
 
-    return [promiseA, promiseB];
+    return /** @type {[Promise<RecognizeResult>, Promise<RecognizeResult>]} */ ([promiseA, promiseB]);
   }
 
   #loadInternal(jobId) {
@@ -346,10 +359,7 @@ export class TessWorker {
    * @param {Partial<RecognizeOptions>} opts
    * @param {Partial<OutputFormats>} output
    * @param {string} [jobId]
-   * @template {Partial<{text: boolean, blocks: boolean, layoutBlocks: boolean, hocr: boolean,
-   * tsv: boolean, box: boolean, unlv: boolean, osd: boolean, pdf: boolean, imageColor: boolean,
-   * imageGrey: boolean, imageBinary: boolean, debug: boolean}>} [T={}]
-   * @returns {Promise<RecognizeResult<T>>}
+   * @returns {Promise<RecognizeResult>}
    */
   async recognize(image, opts = {}, output = {
     blocks: true, text: true,
@@ -366,10 +376,7 @@ export class TessWorker {
    * @param {Partial<RecognizeOptions>} opts
    * @param {Partial<OutputFormats>} output
    * @param {string} [jobId]
-   * @template {Partial<{text: boolean, blocks: boolean, layoutBlocks: boolean, hocr: boolean,
-   * tsv: boolean, box: boolean, unlv: boolean, osd: boolean, pdf: boolean, imageColor: boolean,
-   * imageGrey: boolean, imageBinary: boolean, debug: boolean}>} [T={}]
-   * @returns {Promise<[Promise<RecognizeResult<T>>, Promise<RecognizeResult<T>>]>}
+   * @returns {Promise<[Promise<RecognizeResult>, Promise<RecognizeResult>]>}
    */
   async recognize2(image, opts = {}, output = {
     blocks: true, text: true,
